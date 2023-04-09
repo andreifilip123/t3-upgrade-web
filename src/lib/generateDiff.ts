@@ -1,6 +1,5 @@
 import { exec } from "child_process";
 import fs from "fs";
-import { NextApiRequest, NextApiResponse } from "next";
 import path from "path";
 import { z } from "zod";
 
@@ -16,29 +15,25 @@ const executeCommand = (command: string) => {
   });
 };
 
-const Body = z.object({
+const Params = z.object({
   currentVersion: z.string(),
   upgradeVersion: z.string(),
   features: z.object({
-    nextAuth: z.boolean(),
-    prisma: z.boolean(),
-    trpc: z.boolean(),
-    tailwind: z.boolean(),
+    nextAuth: z.boolean().optional(),
+    prisma: z.boolean().optional(),
+    trpc: z.boolean().optional(),
+    tailwind: z.boolean().optional(),
   }),
 });
 
-type Body = z.infer<typeof Body>;
+type Params = z.infer<typeof Params>;
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
-  const { success } = Body.safeParse(req.body);
+export default async function generateDiff(params: Params) {
+  const { success } = Params.safeParse(params);
   if (!success) {
-    res.status(400).json({ error: "Invalid request body" });
-    return;
+    return { error: "Invalid request body" };
   }
-  const { currentVersion, upgradeVersion, features } = Body.parse(req.body);
+  const { currentVersion, upgradeVersion, features } = Params.parse(params);
   const featureFlags = Object.entries(features)
     .filter(([, value]) => value)
     .map(([key]) => `--${key}=true`)
@@ -84,8 +79,8 @@ export default async function handler(
     );
 
     // Send the diff back to the client
-    res.status(200).json({ differences });
+    return { differences };
   } catch (error) {
-    res.status(500).json({ error: error });
+    return { error };
   }
 }
