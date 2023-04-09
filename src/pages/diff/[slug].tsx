@@ -4,6 +4,7 @@ import { type GetStaticProps, type NextPage } from "next";
 import { Diff, Hunk, parseDiff } from "react-diff-view";
 
 import generateDiff from "@/lib/generateDiff";
+import { useRouter } from "next/router";
 
 export const getStaticPaths = async () => {
   const t3Versions = await getT3Versions();
@@ -16,7 +17,7 @@ export const getStaticPaths = async () => {
         slug: `${version}..${latestVersion}-nextAuth-prisma-trpc-tailwind`,
       },
     })),
-    fallback: true,
+    fallback: "blocking",
   };
 };
 
@@ -110,8 +111,9 @@ export const getStaticProps: GetStaticProps<Props, Params> = async (
 };
 
 const DiffPage: NextPage<{ diffText: string }> = ({ diffText }) => {
-  if (!diffText) {
-    return <div>Diff not found</div>;
+  const router = useRouter();
+  if (router.isFallback) {
+    return <div>Loading...</div>;
   }
 
   const files = parseDiff(diffText);
