@@ -9,8 +9,8 @@ import {
   SelectValue,
 } from "@/components/ui/Select";
 import {
-  VersionsGroupedByMajor,
   getT3VersionsGroupedByMajor,
+  type VersionsGroupedByMajor,
 } from "@/lib/utils";
 import { type NextPage } from "next";
 import Head from "next/head";
@@ -71,7 +71,7 @@ const Home: NextPage = () => {
       setVersionOptions(t3Versions);
     };
 
-    loadT3Versions();
+    void loadT3Versions();
   }, []);
 
   const renderSelectContent = (options: VersionsGroupedByMajor) => {
@@ -102,7 +102,7 @@ const Home: NextPage = () => {
       "-"
     )}`;
 
-    router.push(url);
+    void router.push(url);
   };
 
   return (

@@ -14,6 +14,7 @@
     "class-variance-authority": "^0.5.1",
     "clsx": "^1.2.1",
     "eslint-plugin-tailwindcss": "^3.11.0",
+    "gitdiff-parser": "^0.3.1",
     "lucide-react": "^0.134.0",
     "next": "^13.2.4",
     "react": "18.2.0",

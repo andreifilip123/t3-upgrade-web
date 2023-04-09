@@ -5,7 +5,7 @@ import { z } from "zod";
 
 const executeCommand = (command: string) => {
   return new Promise((resolve, reject) => {
-    exec(command, (error, stdout, stderr) => {
+    exec(command, (error, stdout) => {
       if (error) {
         reject(error);
         return;

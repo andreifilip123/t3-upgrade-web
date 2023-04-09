@@ -1,12 +1,13 @@
 import { getT3Versions } from "@/lib/utils";
-import { GetStaticProps, NextPage } from "next";
-import { Diff, FileData, Hunk, parseDiff } from "react-diff-view";
+import { type File as FileData } from "gitdiff-parser";
+import { type GetStaticProps, type NextPage } from "next";
+import { Diff, Hunk, parseDiff } from "react-diff-view";
 
 import generateDiff from "@/lib/generateDiff";
 
 export const getStaticPaths = async () => {
   const t3Versions = await getT3Versions();
-  const latestVersion = t3Versions.shift();
+  const latestVersion = t3Versions.shift() as string;
   const mostRecentT3Versions = t3Versions.slice(0, 10);
 
   return {
@@ -65,7 +66,7 @@ export const getStaticProps: GetStaticProps<Props, Params> = async (
     };
   }
 
-  const versionsAndFeatures = extractVersionsAndFeatures(params.slug as string);
+  const versionsAndFeatures = extractVersionsAndFeatures(params.slug);
 
   if (!versionsAndFeatures) {
     return {
@@ -117,7 +118,7 @@ const DiffPage: NextPage<{ diffText: string }> = ({ diffText }) => {
 
   const renderFile = ({ oldRevision, newRevision, type, hunks }: FileData) => (
     <Diff
-      key={oldRevision + "-" + newRevision}
+      key={`${oldRevision}-${newRevision}`}
       viewType="split"
       diffType={type}
       hunks={hunks}

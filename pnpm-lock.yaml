@@ -16,6 +16,9 @@ dependencies:
   eslint-plugin-tailwindcss:
     specifier: ^3.11.0
     version: 3.11.0(tailwindcss@3.3.0)
+  gitdiff-parser:
+    specifier: ^0.3.1
+    version: 0.3.1
   lucide-react:
     specifier: ^0.134.0
     version: 0.134.0(react@18.2.0)
@@ -1783,6 +1786,10 @@ packages:
   /get-tsconfig@4.5.0:
     resolution: {integrity: sha512-MjhiaIWCJ1sAU4pIQ5i5OfOuHHxVo1oYeNsWTON7jxYkod8pHocXeh+SSbmu5OZZZK73B6cbJ2XADzXehLyovQ==}
     dev: true
+
+  /gitdiff-parser@0.3.1:
+    resolution: {integrity: sha512-YQJnY8aew65id8okGxKCksH3efDCJ9HzV7M9rsvd65habf39Pkh4cgYJ27AaoDMqo1X98pgNJhNMrm/kpV7UVQ==}
+    dev: false
 
   /glob-parent@5.1.2:
     resolution: {integrity: sha512-AOIgSQCepiJYwP3ARnGx+5VnTu2HBYdzbGP45eLw1vr3zB3vZLeyed1sC9hnbcOc9/SrMyM5RPQrkGz4aS9Zow==}
