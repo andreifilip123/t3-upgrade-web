@@ -49,6 +49,20 @@ export default async function generateDiff(params: Params) {
   const getCommand = (version: string, path: string) =>
     `npx create-t3-app@${version} ${path} --CI ${featureFlags} --noGit --noInstall`;
 
+  // Check if diff already exists
+  const diffExists = fs.existsSync(
+    path.join(__dirname, `diff-${currentVersion}-${upgradeVersion}.patch`)
+  );
+
+  if (diffExists) {
+    const differences = fs.readFileSync(
+      path.join(__dirname, `diff-${currentVersion}-${upgradeVersion}.patch`),
+      "utf8"
+    );
+
+    return { differences };
+  }
+
   try {
     await executeCommand(getCommand(currentVersion, currentProjectPath));
     await executeCommand(getCommand(upgradeVersion, upgradeProjectPath));
