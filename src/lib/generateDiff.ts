@@ -39,8 +39,8 @@ export default async function generateDiff(params: Params) {
     .map(([key]) => `--${key}=true`)
     .join(" ");
 
-  const currentProjectPath = path.join(__dirname, "current");
-  const upgradeProjectPath = path.join(__dirname, "upgrade");
+  const currentProjectPath = path.join(process.cwd(), "current");
+  const upgradeProjectPath = path.join(process.cwd(), "upgrade");
 
   // Make sure the directories don't exist
   await executeCommand(`rm -rf ${currentProjectPath}`);
@@ -51,12 +51,15 @@ export default async function generateDiff(params: Params) {
 
   // Check if diff already exists
   const diffExists = fs.existsSync(
-    path.join(__dirname, `diff-${currentVersion}-${upgradeVersion}.patch`)
+    path.join(process.cwd(), `diff-${currentVersion}-${upgradeVersion}.patch`)
   );
 
   if (diffExists) {
     const differences = fs.readFileSync(
-      path.join(__dirname, `diff-${currentVersion}-${upgradeVersion}.patch`),
+      path.join(
+        process.cwd(),
+        `diff-${currentVersion}-${upgradeVersion}.patch`
+      ),
       "utf8"
     );
 
@@ -88,7 +91,10 @@ export default async function generateDiff(params: Params) {
 
     // Read the diff
     const differences = fs.readFileSync(
-      path.join(__dirname, `diff-${currentVersion}-${upgradeVersion}.patch`),
+      path.join(
+        process.cwd(),
+        `diff-${currentVersion}-${upgradeVersion}.patch`
+      ),
       "utf8"
     );
 
