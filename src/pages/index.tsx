@@ -1,3 +1,4 @@
+import { Checkbox } from "@/components/ui/Checkbox";
 import {
   Select,
   SelectContent,
@@ -19,6 +20,12 @@ const Home: NextPage = () => {
   );
   const [currentVersion, setCurrentVersion] = useState<string | null>(null);
   const [upgradeVersion, setUpgradeVersion] = useState<string | null>(null);
+  const [features, setFeatures] = useState({
+    NextAuth: false,
+    Prisma: false,
+    TRPC: false,
+    Tailwind: false,
+  });
 
   const upgradeVersionOptions = useMemo(() => {
     if (!currentVersion) return {};
@@ -107,6 +114,32 @@ const Home: NextPage = () => {
               {renderSelectContent(upgradeVersionOptions)}
             </SelectContent>
           </Select>
+
+          <div className="flex items-center gap-6 text-white">
+            {Object.keys(features).map((feature) => (
+              <div className="flex items-center space-x-4" key={feature}>
+                <Checkbox
+                  id={feature}
+                  checked={features[feature as keyof typeof features]}
+                  onCheckedChange={(value) =>
+                    value !== "indeterminate"
+                      ? setFeatures((prev) => ({
+                          ...prev,
+                          [feature]: value,
+                        }))
+                      : null
+                  }
+                />
+                <label
+                  htmlFor={feature}
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  {feature}
+                </label>
+              </div>
+            ))}
+          </div>
+
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
             <Link
               className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 text-white hover:bg-white/20"
