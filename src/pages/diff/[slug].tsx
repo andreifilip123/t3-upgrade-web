@@ -9,7 +9,7 @@ import { useRouter } from "next/router";
 export const getStaticPaths = async () => {
   const t3Versions = await getT3Versions();
   const latestVersion = t3Versions.shift() as string;
-  const mostRecentT3Versions = t3Versions.slice(0, 10);
+  const mostRecentT3Versions = t3Versions.slice(0, 5);
 
   return {
     paths: mostRecentT3Versions.map((version) => ({
