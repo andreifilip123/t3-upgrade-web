@@ -1,8 +1,77 @@
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/Select";
+import { VersionsGroupedByMajor, getT3Versions } from "@/lib/utils";
 import { type NextPage } from "next";
 import Head from "next/head";
 import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 
 const Home: NextPage = () => {
+  const [versionOptions, setVersionOptions] = useState<VersionsGroupedByMajor>(
+    {}
+  );
+  const [currentVersion, setCurrentVersion] = useState<string | null>(null);
+  const [upgradeVersion, setUpgradeVersion] = useState<string | null>(null);
+
+  const upgradeVersionOptions = useMemo(() => {
+    if (!currentVersion) return {};
+    const [major, minor, patch] = currentVersion.split(".");
+    const filteredVersions = Object.keys(versionOptions)
+      .filter((majorVersion) => Number(majorVersion) >= Number(major))
+      .reduce((acc, majorVersion) => {
+        if (Number(majorVersion) === Number(major)) {
+          const initialValues = versionOptions[majorVersion];
+          const filterValue = (version: string) => {
+            const [, versionMinor, versionPatch] = version.split(".");
+            if (Number(versionMinor) > Number(minor)) return true;
+            if (
+              Number(versionMinor) === Number(minor) &&
+              Number(versionPatch) > Number(patch)
+            )
+              return true;
+            return false;
+          };
+          acc[majorVersion] = initialValues?.filter(filterValue) || [];
+        } else {
+          acc[majorVersion] = versionOptions[majorVersion] || [];
+        }
+        return acc;
+      }, {} as VersionsGroupedByMajor);
+    return filteredVersions;
+  }, [currentVersion, versionOptions]);
+
+  useEffect(() => {
+    const loadT3Versions = async () => {
+      const t3Versions = await getT3Versions();
+      setVersionOptions(t3Versions);
+    };
+
+    loadT3Versions();
+  }, []);
+
+  const renderSelectContent = (options: VersionsGroupedByMajor) => {
+    if (!Object.keys(options).length) return null;
+    return Object.keys(options)
+      .filter((majorVersion) => options[majorVersion]?.length)
+      .map((majorVersion) => (
+        <SelectGroup key={majorVersion}>
+          <SelectLabel>{`${majorVersion}.x`}</SelectLabel>
+          {options[majorVersion]?.map((version) => (
+            <SelectItem key={version} value={version}>
+              {version}
+            </SelectItem>
+          ))}
+        </SelectGroup>
+      ));
+  };
+
   return (
     <>
       <Head>
@@ -15,6 +84,29 @@ const Home: NextPage = () => {
           <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
             Create <span className="text-[hsl(280,100%,70%)]">T3</span> App
           </h1>
+          <Select onValueChange={(value) => setCurrentVersion(value)}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Select a version" />
+            </SelectTrigger>
+            <SelectContent>{renderSelectContent(versionOptions)}</SelectContent>
+          </Select>
+          <Select
+            onValueChange={(value) => setUpgradeVersion(value)}
+            disabled={!currentVersion}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue
+                placeholder={
+                  currentVersion
+                    ? "Select a version"
+                    : "Please select the current version first"
+                }
+              />
+            </SelectTrigger>
+            <SelectContent>
+              {renderSelectContent(upgradeVersionOptions)}
+            </SelectContent>
+          </Select>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
             <Link
               className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 text-white hover:bg-white/20"
