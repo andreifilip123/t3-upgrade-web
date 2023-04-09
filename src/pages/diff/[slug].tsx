@@ -61,9 +61,7 @@ export const getStaticProps: GetStaticProps<Props, Params> = async (
 
   if (!params?.slug) {
     return {
-      props: {
-        diffText: "",
-      },
+      notFound: true,
     };
   }
 
@@ -71,9 +69,7 @@ export const getStaticProps: GetStaticProps<Props, Params> = async (
 
   if (!versionsAndFeatures) {
     return {
-      props: {
-        diffText: "",
-      },
+      notFound: true,
     };
   }
 
@@ -97,9 +93,7 @@ export const getStaticProps: GetStaticProps<Props, Params> = async (
 
   if (error || !differences) {
     return {
-      props: {
-        diffText: "",
-      },
+      notFound: true,
     };
   }
 
