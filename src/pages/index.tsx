@@ -20,10 +20,10 @@ const Home: NextPage = () => {
   const [currentVersion, setCurrentVersion] = useState<string | null>(null);
   const [upgradeVersion, setUpgradeVersion] = useState<string | null>(null);
   const [features, setFeatures] = useState({
-    NextAuth: false,
-    Prisma: false,
-    TRPC: false,
-    Tailwind: false,
+    nextAuth: false,
+    prisma: false,
+    trpc: false,
+    tailwind: false,
   });
 
   const upgradeVersionOptions = useMemo(() => {
@@ -86,6 +86,22 @@ const Home: NextPage = () => {
   };
 
   const noUpgradeAvailable = !Object.keys(upgradeVersionOptions).length;
+
+  const generateDiff = () => {
+    if (!currentVersion || !upgradeVersion) return;
+    const response = fetch("/api/generateDiff", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        currentVersion,
+        upgradeVersion,
+        features,
+      }),
+    });
+    console.log(response);
+  };
 
   return (
     <>
@@ -159,6 +175,14 @@ const Home: NextPage = () => {
               </div>
             ))}
           </div>
+
+          <button
+            className="rounded-md bg-[hsl(280,100%,70%)] px-4 py-2 text-lg font-medium text-white disabled:cursor-not-allowed disabled:opacity-70"
+            disabled={!currentVersion || !upgradeVersion}
+            onClick={() => generateDiff()}
+          >
+            Upgrade
+          </button>
         </div>
       </main>
     </>
