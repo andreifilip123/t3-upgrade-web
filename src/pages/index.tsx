@@ -8,12 +8,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/Select";
-import { VersionsGroupedByMajor, getT3Versions } from "@/lib/utils";
+import {
+  VersionsGroupedByMajor,
+  getT3VersionsGroupedByMajor,
+} from "@/lib/utils";
 import { type NextPage } from "next";
 import Head from "next/head";
+import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 
 const Home: NextPage = () => {
+  const router = useRouter();
   const [versionOptions, setVersionOptions] = useState<VersionsGroupedByMajor>(
     {}
   );
@@ -62,7 +67,7 @@ const Home: NextPage = () => {
 
   useEffect(() => {
     const loadT3Versions = async () => {
-      const t3Versions = await getT3Versions();
+      const t3Versions = await getT3VersionsGroupedByMajor();
       setVersionOptions(t3Versions);
     };
 
@@ -87,20 +92,17 @@ const Home: NextPage = () => {
 
   const noUpgradeAvailable = !Object.keys(upgradeVersionOptions).length;
 
-  const generateDiff = () => {
+  const goToDiff = () => {
     if (!currentVersion || !upgradeVersion) return;
-    const response = fetch("/api/generateDiff", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        currentVersion,
-        upgradeVersion,
-        features,
-      }),
-    });
-    console.log(response);
+    const activeFeatures = Object.keys(features).filter(
+      (feature) => features[feature as keyof typeof features]
+    );
+
+    const url = `/diff/${currentVersion}..${upgradeVersion}-${activeFeatures.join(
+      "-"
+    )}`;
+
+    router.push(url);
   };
 
   return (
@@ -179,7 +181,7 @@ const Home: NextPage = () => {
           <button
             className="rounded-md bg-[hsl(280,100%,70%)] px-4 py-2 text-lg font-medium text-white disabled:cursor-not-allowed disabled:opacity-70"
             disabled={!currentVersion || !upgradeVersion}
-            onClick={() => generateDiff()}
+            onClick={() => goToDiff()}
           >
             Upgrade
           </button>
