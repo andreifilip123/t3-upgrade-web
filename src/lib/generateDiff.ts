@@ -78,6 +78,9 @@ export default async function generateDiff(params: Params) {
       "utf8"
     );
 
+    await executeCommand(`rm -rf ${currentProjectPath}`);
+    await executeCommand(`rm -rf ${upgradeProjectPath}`);
+
     // Send the diff back to the client
     return { differences };
   } catch (error) {
