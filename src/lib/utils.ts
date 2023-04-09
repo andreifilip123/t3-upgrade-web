@@ -21,6 +21,12 @@ export const getT3Versions = async () => {
   const versions = data.map((release) => release.tag_name.split("@")[1] ?? "");
   const actualVersions = versions.filter((version) => version !== "");
 
+  return actualVersions;
+};
+
+export const getT3VersionsGroupedByMajor = async () => {
+  const actualVersions = await getT3Versions();
+
   const versionsGroupedByMajor: VersionsGroupedByMajor = {};
 
   actualVersions.forEach((version) => {
