@@ -13,7 +13,7 @@ export const getStaticPaths = async () => {
   return {
     paths: mostRecentT3Versions.map((version) => ({
       params: {
-        slug: `${latestVersion}..${version}-nextAuth-prisma-trpc-tailwind`,
+        slug: `${version}..${latestVersion}-nextAuth-prisma-trpc-tailwind`,
       },
     })),
     fallback: true,
