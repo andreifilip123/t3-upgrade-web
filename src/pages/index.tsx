@@ -28,7 +28,7 @@ const Home: NextPage = () => {
   });
 
   const upgradeVersionOptions = useMemo(() => {
-    if (!currentVersion) return {};
+    if (!currentVersion) return versionOptions;
     const [major, minor, patch] = currentVersion.split(".");
     const filteredVersions = Object.keys(versionOptions)
       .filter((majorVersion) => Number(majorVersion) >= Number(major))
@@ -51,6 +51,13 @@ const Home: NextPage = () => {
         }
         return acc;
       }, {} as VersionsGroupedByMajor);
+
+    // if only one major version is available and it has no versions, return empty object
+    if (Object.keys(filteredVersions).length === 1) {
+      const [majorVersion] = Object.keys(filteredVersions);
+      if (!majorVersion) return {};
+      if (!filteredVersions[majorVersion]?.length) return {};
+    }
     return filteredVersions;
   }, [currentVersion, versionOptions]);
 
@@ -79,6 +86,8 @@ const Home: NextPage = () => {
       ));
   };
 
+  const noUpgradeAvailable = !Object.keys(upgradeVersionOptions).length;
+
   return (
     <>
       <Head>
@@ -91,29 +100,41 @@ const Home: NextPage = () => {
           <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
             Create <span className="text-[hsl(280,100%,70%)]">T3</span> App
           </h1>
-          <Select onValueChange={(value) => setCurrentVersion(value)}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Select a version" />
-            </SelectTrigger>
-            <SelectContent>{renderSelectContent(versionOptions)}</SelectContent>
-          </Select>
-          <Select
-            onValueChange={(value) => setUpgradeVersion(value)}
-            disabled={!currentVersion}
-          >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue
-                placeholder={
-                  currentVersion
-                    ? "Select a version"
-                    : "Please select the current version first"
-                }
-              />
-            </SelectTrigger>
-            <SelectContent>
-              {renderSelectContent(upgradeVersionOptions)}
-            </SelectContent>
-          </Select>
+          <div className="flex items-center gap-6">
+            <div>
+              <p className="text-xl text-white">Current version:</p>
+              <Select onValueChange={(value) => setCurrentVersion(value)}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Select version" />
+                </SelectTrigger>
+                <SelectContent>
+                  {renderSelectContent(versionOptions)}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <p className="text-xl text-white">Upgrade to:</p>
+
+              <Select
+                onValueChange={(value) => setUpgradeVersion(value)}
+                disabled={!!noUpgradeAvailable}
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue
+                    placeholder={
+                      noUpgradeAvailable
+                        ? "No upgrade available"
+                        : "Select version"
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {renderSelectContent(upgradeVersionOptions)}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
 
           <div className="flex items-center gap-6 text-white">
             {Object.keys(features).map((feature) => (
