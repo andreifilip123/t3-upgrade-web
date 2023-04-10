@@ -3,9 +3,15 @@ import {
   getT3Versions,
   type DiffLocation,
 } from "@/lib/utils";
-import { Hunk as HunkData, type File as FileData } from "gitdiff-parser";
+import type { Hunk as HunkData, File as FileData } from "gitdiff-parser";
 import { type GetStaticProps, type NextPage } from "next";
-import { Diff, Hunk, ViewType, parseDiff, Decoration } from "react-diff-view";
+import {
+  Diff,
+  Hunk,
+  type ViewType,
+  parseDiff,
+  Decoration,
+} from "react-diff-view";
 
 import generateDiff from "@/lib/generateDiff";
 import fs from "fs";
@@ -179,11 +185,15 @@ const DiffPage: NextPage<{
   const router = useRouter();
   const [viewType, setViewType] = useState<ViewType>("split");
 
+  const files = parseDiff(diffText ?? "");
+
+  const [expandedDiffs, setExpandedDiffs] = useState<boolean[]>(
+    Array.from({ length: files.length }, () => true)
+  );
+
   if (router.isFallback) {
     return <div>Loading...</div>;
   }
-
-  const files = parseDiff(diffText);
 
   const renderHunk = (hunk: HunkData) => (
     <>
@@ -197,19 +207,61 @@ const DiffPage: NextPage<{
     </>
   );
 
-  const renderFile = ({ oldRevision, newRevision, type, hunks }: FileData) => (
-    <Diff
-      key={`${oldRevision}-${newRevision}`}
-      viewType={viewType}
-      diffType={type}
-      hunks={hunks}
-    >
-      {(hunks) => hunks.map(renderHunk)}
-    </Diff>
-  );
+  const FileComponent = ({
+    file,
+    isExpanded,
+    setIsExpanded,
+  }: {
+    file: FileData;
+    isExpanded: boolean;
+    setIsExpanded: (a: boolean) => void;
+  }) => {
+    const { oldRevision, newRevision, type, hunks, oldPath, newPath } = file;
+
+    return (
+      <div key={`${oldRevision}-${newRevision}`}>
+        <button
+          className={`flex w-full flex-row justify-between p-4 font-mono ${
+            isExpanded ? "border-b-2" : ""
+          }`}
+          onClick={() => setIsExpanded(!isExpanded)}
+        >
+          <div className="flex flex-row gap-4">
+            <div className="my-auto rounded-[4px] border border-gray-500 px-1 text-gray-500">
+              {type === "modify"
+                ? "CHANGED"
+                : type === "add"
+                ? "ADDED"
+                : type === "delete"
+                ? "DELETED"
+                : "UNKNOWN"}
+            </div>
+            <h1>
+              {oldPath === "/dev/null"
+                ? newPath
+                : newPath === "/dev/null"
+                ? oldPath
+                : oldPath === newPath
+                ? newPath
+                : oldPath + " → " + newPath}
+            </h1>
+          </div>
+
+          <div className="my-auto rounded-[4px] border border-gray-500 px-1 text-gray-500">
+            {isExpanded ? "Collapse" : "Expand"}
+          </div>
+        </button>
+        {isExpanded && (
+          <Diff viewType={viewType} diffType={type} hunks={hunks}>
+            {(hunks) => hunks.map(renderHunk)}
+          </Diff>
+        )}
+      </div>
+    );
+  };
 
   return (
-    <main className="bg-gray-200 py-4">
+    <main className="min-h-screen bg-gray-200 py-4">
       <h1 className="mb-4 text-center text-4xl font-extrabold tracking-tight sm:text-5xl">
         Changes from {versionsAndFeatures?.currentVersion} to{" "}
         {versionsAndFeatures?.upgradeVersion}
@@ -233,7 +285,7 @@ const DiffPage: NextPage<{
           <button
             className={`${
               viewType === "split" ? "bg-gray-300" : "bg-gray-200"
-            } rounded-l-xl border-b border-l border-t border-gray-300 px-4 py-2 transition-all`}
+            } rounded-l-xl border-y border-l border-gray-300 px-4 py-2 transition-all`}
             onClick={() => setViewType("split")}
           >
             Split
@@ -241,7 +293,7 @@ const DiffPage: NextPage<{
           <button
             className={`${
               viewType === "unified" ? "bg-gray-300" : "bg-gray-200"
-            } rounded-r-xl border-b border-r border-t border-gray-300 px-4 py-2 transition-all`}
+            } rounded-r-xl border-y border-r border-gray-300 px-4 py-2 transition-all`}
             onClick={() => setViewType("unified")}
           >
             Unified
@@ -249,33 +301,19 @@ const DiffPage: NextPage<{
         </div>
       </div>
 
-      {files.map((file) => (
+      {files.map((file, index) => (
         <div
           key={file.newPath}
           className="m-2 my-4 rounded-xl bg-white shadow-lg"
         >
-          <div className="flex flex-row gap-4 border-b-2 p-4 font-mono">
-            <div className="my-auto rounded-[4px] border border-gray-500 px-1 text-gray-500">
-              {file.type === "modify"
-                ? "CHANGED"
-                : file.type === "add"
-                ? "ADDED"
-                : file.type === "delete"
-                ? "DELETED"
-                : file.type === "copy"
-                ? "COPIED"
-                : file.type === "rename"
-                ? "RENAMED"
-                : "UNKNOWN"}
-            </div>
-
-            <h1>
-              {file.oldPath === file.newPath
-                ? file.newPath
-                : file.oldPath + " → " + file.newPath}
-            </h1>
-          </div>
-          {renderFile(file)}
+          <FileComponent
+            file={file}
+            isExpanded={expandedDiffs[index] ?? true}
+            setIsExpanded={(a) => {
+              expandedDiffs[index] = a;
+              setExpandedDiffs([...expandedDiffs]);
+            }}
+          />
         </div>
       ))}
     </main>
