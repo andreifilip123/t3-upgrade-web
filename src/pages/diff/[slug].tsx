@@ -5,12 +5,13 @@ import {
 } from "@/lib/utils";
 import { type File as FileData } from "gitdiff-parser";
 import { type GetStaticProps, type NextPage } from "next";
-import { Diff, Hunk, parseDiff } from "react-diff-view";
+import { Diff, Hunk, ViewType, parseDiff } from "react-diff-view";
 
 import generateDiff from "@/lib/generateDiff";
 import fs from "fs";
 import { useRouter } from "next/router";
 import path from "path";
+import { useState } from "react";
 
 export const getStaticPaths = async () => {
   const t3Versions = await getT3Versions();
@@ -166,12 +167,18 @@ export const getStaticProps: GetStaticProps<Props, Params> = async (
   return {
     props: {
       diffText: differences,
+      versionsAndFeatures,
     },
   };
 };
 
-const DiffPage: NextPage<{ diffText: string }> = ({ diffText }) => {
+const DiffPage: NextPage<{
+  diffText: string;
+  versionsAndFeatures: DiffLocation;
+}> = ({ diffText, versionsAndFeatures }) => {
   const router = useRouter();
+  const [viewType, setViewType] = useState<ViewType>("split");
+
   if (router.isFallback) {
     return <div>Loading...</div>;
   }
@@ -181,7 +188,7 @@ const DiffPage: NextPage<{ diffText: string }> = ({ diffText }) => {
   const renderFile = ({ oldRevision, newRevision, type, hunks }: FileData) => (
     <Diff
       key={`${oldRevision}-${newRevision}`}
-      viewType="split"
+      viewType={viewType}
       diffType={type}
       hunks={hunks}
     >
@@ -189,7 +196,62 @@ const DiffPage: NextPage<{ diffText: string }> = ({ diffText }) => {
     </Diff>
   );
 
-  return <div>{files.map(renderFile)}</div>;
+  return (
+    <main className="bg-gray-200 py-4">
+      <h1 className="mb-4 text-center text-4xl font-extrabold tracking-tight sm:text-5xl">
+        Changes from {versionsAndFeatures?.currentVersion} to{" "}
+        {versionsAndFeatures?.upgradeVersion}
+      </h1>
+      <ul className="mb-2 flex flex-wrap justify-center">
+        {Object.entries(versionsAndFeatures.features).map(
+          ([feature, enabled]) => (
+            <li
+              key={feature}
+              className={`${
+                enabled ? "bg-green-500" : "bg-gray-500"
+              } m-2 rounded-lg p-3 font-bold text-white shadow-lg`}
+            >
+              {feature}
+            </li>
+          )
+        )}
+      </ul>
+      <div className="flex flex-col items-center">
+        <div className="flex">
+          <button
+            className={`${
+              viewType === "split" ? "bg-gray-300" : "bg-gray-200"
+            } rounded-l-xl border-b border-l border-t border-gray-300 px-4 py-2 transition-all`}
+            onClick={() => setViewType("split")}
+          >
+            Split
+          </button>
+          <button
+            className={`${
+              viewType === "unified" ? "bg-gray-300" : "bg-gray-200"
+            } rounded-r-xl border-b border-r border-t border-gray-300 px-4 py-2 transition-all`}
+            onClick={() => setViewType("unified")}
+          >
+            Unified
+          </button>
+        </div>
+      </div>
+
+      {files.map((file) => (
+        <div
+          key={file.newPath}
+          className="m-2 my-4 rounded-xl bg-white p-2 shadow-lg"
+        >
+          <h1 className="my-2 text-center text-2xl font-bold">
+            {file.oldPath === file.newPath
+              ? file.newPath
+              : file.oldPath + " → " + file.newPath}
+          </h1>
+          {renderFile(file)}
+        </div>
+      ))}
+    </main>
+  );
 };
 
 export default DiffPage;
