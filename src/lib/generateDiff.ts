@@ -5,16 +5,12 @@ import { z } from "zod";
 import { getDiffPath } from "./utils";
 
 const executeCommand = (command: string) => {
-  const startTime = performance.now();
-  console.log(`Executing command "${command}"...`);
   return new Promise((resolve, reject) => {
     exec(command, (error, stdout) => {
       if (error) {
         reject(error);
         return;
       }
-      const endTime = performance.now();
-      console.log(`Command "${command}" took ${endTime - startTime}ms`);
       resolve(stdout);
     });
   });
