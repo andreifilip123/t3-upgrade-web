@@ -33,6 +33,10 @@ export const getStaticPaths = async () => {
 
   const latestVersion = sortedT3Versions[sortedT3Versions.length - 1] as string;
 
+  if (!fs.existsSync(path.join(process.cwd(), "diffs"))) {
+    fs.mkdirSync(path.join(process.cwd(), "diffs"));
+  }
+
   const existingDiffs = fs.readdirSync(path.join(process.cwd(), "diffs"));
 
   const diffsMap: { [key: string]: boolean } = existingDiffs.reduce(
