@@ -94,6 +94,15 @@ export default async function generateDiff(params: Params) {
     await executeCommand(`rm -rf ${currentProjectPath}`);
     await executeCommand(`rm -rf ${upgradeProjectPath}`);
 
+    const diffsFolder = path.join(process.cwd(), "diffs");
+
+    // Stage and commit all the changes in the diff directory
+    await executeCommand(`
+      git add ${diffsFolder} &&
+      git commit -m "Update diffs" &&
+      git push
+    `);
+
     // Send the diff back to the client
     return { differences };
   } catch (error) {
