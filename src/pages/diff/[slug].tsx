@@ -3,9 +3,9 @@ import {
   getT3Versions,
   type DiffLocation,
 } from "@/lib/utils";
-import { type File as FileData } from "gitdiff-parser";
+import { Hunk as HunkData, type File as FileData } from "gitdiff-parser";
 import { type GetStaticProps, type NextPage } from "next";
-import { Diff, Hunk, ViewType, parseDiff } from "react-diff-view";
+import { Diff, Hunk, ViewType, parseDiff, Decoration } from "react-diff-view";
 
 import generateDiff from "@/lib/generateDiff";
 import fs from "fs";
@@ -185,6 +185,18 @@ const DiffPage: NextPage<{
 
   const files = parseDiff(diffText);
 
+  const renderHunk = (hunk: HunkData) => (
+    <>
+      <Decoration
+        key={`decoration-${hunk.content}`}
+        className="bg-gray-100 text-gray-400"
+      >
+        <span className="pl-20">{hunk.content}</span>
+      </Decoration>
+      <Hunk key={`hunk-${hunk.content}`} hunk={hunk} />
+    </>
+  );
+
   const renderFile = ({ oldRevision, newRevision, type, hunks }: FileData) => (
     <Diff
       key={`${oldRevision}-${newRevision}`}
@@ -192,7 +204,7 @@ const DiffPage: NextPage<{
       diffType={type}
       hunks={hunks}
     >
-      {(hunks) => hunks.map((hunk) => <Hunk key={hunk.content} hunk={hunk} />)}
+      {(hunks) => hunks.map(renderHunk)}
     </Diff>
   );
 
@@ -240,13 +252,29 @@ const DiffPage: NextPage<{
       {files.map((file) => (
         <div
           key={file.newPath}
-          className="m-2 my-4 rounded-xl bg-white p-2 shadow-lg"
+          className="m-2 my-4 rounded-xl bg-white shadow-lg"
         >
-          <h1 className="my-2 text-center text-2xl font-bold">
-            {file.oldPath === file.newPath
-              ? file.newPath
-              : file.oldPath + " → " + file.newPath}
-          </h1>
+          <div className="flex flex-row gap-4 border-b-2 p-4 font-mono">
+            <div className="my-auto rounded-[4px] border border-gray-500 px-1 text-gray-500">
+              {file.type === "modify"
+                ? "CHANGED"
+                : file.type === "add"
+                ? "ADDED"
+                : file.type === "delete"
+                ? "DELETED"
+                : file.type === "copy"
+                ? "COPIED"
+                : file.type === "rename"
+                ? "RENAMED"
+                : "UNKNOWN"}
+            </div>
+
+            <h1>
+              {file.oldPath === file.newPath
+                ? file.newPath
+                : file.oldPath + " → " + file.newPath}
+            </h1>
+          </div>
           {renderFile(file)}
         </div>
       ))}
