@@ -51,9 +51,6 @@ export default async function generateDiff(params: Params) {
   await executeCommand(`rm -rf ${currentProjectPath}`);
   await executeCommand(`rm -rf ${upgradeProjectPath}`);
 
-  // Create the diff directory if it doesn't exist
-  await executeCommand(`mkdir -p ${path.join(process.cwd(), "diffs")}`);
-
   const getCommand = (version: string, path: string) =>
     `npx create-t3-app@${version} ${path} --CI ${featureFlags} --noGit --noInstall`;
 
