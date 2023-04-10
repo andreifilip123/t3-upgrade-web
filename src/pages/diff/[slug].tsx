@@ -1,15 +1,72 @@
-import { getT3Versions } from "@/lib/utils";
+import {
+  getFeaturesString,
+  getT3Versions,
+  type DiffLocation,
+} from "@/lib/utils";
 import { type File as FileData } from "gitdiff-parser";
 import { type GetStaticProps, type NextPage } from "next";
 import { Diff, Hunk, parseDiff } from "react-diff-view";
 
 import generateDiff from "@/lib/generateDiff";
+import fs from "fs";
 import { useRouter } from "next/router";
+import path from "path";
 
 export const getStaticPaths = async () => {
   const t3Versions = await getT3Versions();
-  const latestVersion = t3Versions.shift() as string;
-  const mostRecentT3Versions = t3Versions.slice(0, 5);
+  const sortedT3Versions = t3Versions.sort((a, b) => {
+    const aParts = a.split(".").map(Number);
+    const bParts = b.split(".").map(Number);
+
+    for (let i = 0; i < aParts.length; i++) {
+      const aPart = aParts[i] as number;
+      const bPart = bParts[i] as number;
+      if (aPart > bPart) {
+        return 1;
+      } else if (aPart < bPart) {
+        return -1;
+      }
+    }
+
+    return 0;
+  });
+
+  const latestVersion = sortedT3Versions[sortedT3Versions.length - 1] as string;
+
+  const existingDiffs = fs.readdirSync(path.join(process.cwd(), "diffs"));
+
+  const existingDiffsMap: { [key: string]: boolean } = existingDiffs.reduce(
+    (acc, diff) => {
+      const versionsAndFeatures = extractVersionsAndFeatures(diff);
+
+      if (!versionsAndFeatures) {
+        return acc;
+      }
+
+      const { currentVersion, upgradeVersion, features } = versionsAndFeatures;
+
+      return {
+        ...acc,
+        [`${currentVersion}..${upgradeVersion}-${getFeaturesString(features)}`]:
+          true,
+      };
+    },
+    {}
+  );
+
+  const newT3Versions = sortedT3Versions.filter((version) => {
+    const key = `${version}..${latestVersion}-nextAuth-prisma-trpc-tailwind`;
+    // remove existing diffs
+    if (existingDiffsMap[key]) {
+      return false;
+    }
+
+    return true;
+  });
+
+  const mostRecentT3Versions = newT3Versions.slice(
+    Math.min(newT3Versions.length - 10, 10)
+  );
 
   return {
     paths: mostRecentT3Versions.map((version) => ({
@@ -30,7 +87,7 @@ type VersionAndFeatures = {
   tailwind: string | null;
 };
 
-const extractVersionsAndFeatures = (slug: string) => {
+const extractVersionsAndFeatures = (slug: string): DiffLocation | null => {
   const regex =
     /(?<currentVersion>\d+\.\d+\.\d+)\.\.(?<upgradeVersion>\d+\.\d+\.\d+)(?:-(?<nextAuth>nextAuth))?(?:-(?<prisma>prisma))?(?:-(?<trpc>trpc))?(?:-(?<tailwind>tailwind))?/;
   const match =
@@ -43,7 +100,16 @@ const extractVersionsAndFeatures = (slug: string) => {
 
   const { currentVersion, upgradeVersion, nextAuth, prisma, trpc, tailwind } =
     match.groups;
-  return { currentVersion, upgradeVersion, nextAuth, prisma, trpc, tailwind };
+  return {
+    currentVersion,
+    upgradeVersion,
+    features: {
+      nextAuth: !!nextAuth,
+      prisma: !!prisma,
+      trpc: !!trpc,
+      tailwind: !!tailwind,
+    },
+  };
 };
 
 type Props = {
@@ -73,15 +139,7 @@ export const getStaticProps: GetStaticProps<Props, Params> = async (
     };
   }
 
-  const { currentVersion, upgradeVersion, nextAuth, prisma, trpc, tailwind } =
-    versionsAndFeatures;
-
-  const features = {
-    nextAuth: !!nextAuth,
-    prisma: !!prisma,
-    trpc: !!trpc,
-    tailwind: !!tailwind,
-  };
+  const { currentVersion, upgradeVersion, features } = versionsAndFeatures;
 
   const response = await generateDiff({
     currentVersion,
