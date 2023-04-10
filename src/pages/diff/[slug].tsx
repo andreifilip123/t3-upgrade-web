@@ -131,6 +131,7 @@ export const getStaticProps: GetStaticProps<Props, Params> = async (
   const { params } = context;
 
   if (!params?.slug) {
+    console.warn("No slug provided");
     return {
       notFound: true,
     };
@@ -139,6 +140,7 @@ export const getStaticProps: GetStaticProps<Props, Params> = async (
   const versionsAndFeatures = extractVersionsAndFeatures(params.slug);
 
   if (!versionsAndFeatures) {
+    console.warn("No versions and features provided");
     return {
       notFound: true,
     };
@@ -155,6 +157,7 @@ export const getStaticProps: GetStaticProps<Props, Params> = async (
   const { differences, error } = response;
 
   if (error || !differences) {
+    console.warn("Error generating diff", error, differences);
     return {
       notFound: true,
     };
