@@ -35,7 +35,7 @@ export const getStaticPaths = async () => {
 
   const existingDiffs = fs.readdirSync(path.join(process.cwd(), "diffs"));
 
-  const existingDiffsMap: { [key: string]: boolean } = existingDiffs.reduce(
+  const diffsMap: { [key: string]: boolean } = existingDiffs.reduce(
     (acc, diff) => {
       const versionsAndFeatures = extractVersionsAndFeatures(diff);
 
@@ -57,7 +57,7 @@ export const getStaticPaths = async () => {
   const newT3Versions = sortedT3Versions.filter((version) => {
     const key = `${version}..${latestVersion}-nextAuth-prisma-trpc-tailwind`;
     // remove existing diffs
-    if (existingDiffsMap[key]) {
+    if (diffsMap[key]) {
       return false;
     }
 
@@ -68,10 +68,15 @@ export const getStaticPaths = async () => {
     Math.min(newT3Versions.length - 10, 10)
   );
 
+  mostRecentT3Versions.forEach((version) => {
+    diffsMap[`${version}..${latestVersion}-nextAuth-prisma-trpc-tailwind`] =
+      true;
+  });
+
   return {
-    paths: mostRecentT3Versions.map((version) => ({
+    paths: Object.keys(diffsMap).map((slug) => ({
       params: {
-        slug: `${version}..${latestVersion}-nextAuth-prisma-trpc-tailwind`,
+        slug,
       },
     })),
     fallback: "blocking",
