@@ -46,22 +46,28 @@ export default async function generateDiff(params: Params) {
   await executeCommand(`rm -rf ${currentProjectPath}`);
   await executeCommand(`rm -rf ${upgradeProjectPath}`);
 
+  // Create the diff directory if it doesn't exist
+  await executeCommand(`mkdir -p ${path.join(process.cwd(), "diffs")}`);
+
   const getCommand = (version: string, path: string) =>
     `npx create-t3-app@${version} ${path} --CI ${featureFlags} --noGit --noInstall`;
 
-  // Check if diff already exists
-  const diffExists = fs.existsSync(
-    path.join(process.cwd(), `diff-${currentVersion}-${upgradeVersion}.patch`)
+  const getDiffPath = () => {
+    const featuresString = Object.entries(features)
+      .filter(([, value]) => value)
+      .map(([key]) => key)
+      .join("-");
+    return path.join(
+      process.cwd(),
+      "diffs",
+      `diff-${currentVersion}-${upgradeVersion}-${featuresString}.patch`
   );
+  };
 
-  if (diffExists) {
-    const differences = fs.readFileSync(
-      path.join(
-        process.cwd(),
-        `diff-${currentVersion}-${upgradeVersion}.patch`
-      ),
-      "utf8"
-    );
+  const diffPath = getDiffPath();
+
+  if (fs.existsSync(diffPath)) {
+    const differences = fs.readFileSync(diffPath, "utf8");
 
     return { differences };
   }
@@ -86,17 +92,11 @@ export default async function generateDiff(params: Params) {
 
     // Generate the diff
     await executeCommand(
-      `cd ${currentProjectPath} && git diff > ../diff-${currentVersion}-${upgradeVersion}.patch && cd ../`
+      `cd ${currentProjectPath} && git diff > ${diffPath} && cd ../`
     );
 
     // Read the diff
-    const differences = fs.readFileSync(
-      path.join(
-        process.cwd(),
-        `diff-${currentVersion}-${upgradeVersion}.patch`
-      ),
-      "utf8"
-    );
+    const differences = fs.readFileSync(diffPath, "utf8");
 
     await executeCommand(`rm -rf ${currentProjectPath}`);
     await executeCommand(`rm -rf ${upgradeProjectPath}`);
