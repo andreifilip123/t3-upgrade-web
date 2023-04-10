@@ -2,6 +2,7 @@ import { exec } from "child_process";
 import fs from "fs";
 import path from "path";
 import { z } from "zod";
+import { getDiffPath } from "./utils";
 
 const executeCommand = (command: string) => {
   const startTime = performance.now();
@@ -56,19 +57,7 @@ export default async function generateDiff(params: Params) {
   const getCommand = (version: string, path: string) =>
     `npx create-t3-app@${version} ${path} --CI ${featureFlags} --noGit --noInstall`;
 
-  const getDiffPath = () => {
-    const featuresString = Object.entries(features)
-      .filter(([, value]) => value)
-      .map(([key]) => key)
-      .join("-");
-    return path.join(
-      process.cwd(),
-      "diffs",
-      `diff-${currentVersion}-${upgradeVersion}-${featuresString}.patch`
-    );
-  };
-
-  const diffPath = getDiffPath();
+  const diffPath = getDiffPath({ currentVersion, upgradeVersion, features });
 
   if (fs.existsSync(diffPath)) {
     const differences = fs.readFileSync(diffPath, "utf8");

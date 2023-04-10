@@ -1,4 +1,5 @@
 import clsx, { type ClassValue } from "clsx";
+import path from "path";
 import { twMerge } from "tailwind-merge";
 
 export const cn = (...inputs: ClassValue[]) => {
@@ -41,4 +42,37 @@ export const getT3VersionsGroupedByMajor = async () => {
   });
 
   return versionsGroupedByMajor;
+};
+
+interface Features {
+  nextAuth?: boolean;
+  prisma?: boolean;
+  trpc?: boolean;
+  tailwind?: boolean;
+}
+
+export const getFeaturesString = (features: Features) => {
+  return Object.entries(features)
+    .filter(([, value]) => value)
+    .map(([key]) => key)
+    .join("-");
+};
+
+export interface DiffLocation {
+  currentVersion: string;
+  upgradeVersion: string;
+  features: Features;
+}
+
+export const getDiffPath = ({
+  currentVersion,
+  upgradeVersion,
+  features,
+}: DiffLocation) => {
+  const featuresString = getFeaturesString(features);
+  return path.join(
+    process.cwd(),
+    "diffs",
+    `diff-${currentVersion}-${upgradeVersion}-${featuresString}.patch`
+  );
 };
