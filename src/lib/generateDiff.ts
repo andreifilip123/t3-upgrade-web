@@ -73,13 +73,16 @@ export default async function generateDiff(params: Params) {
 
     // Move the upgrade project over the current project
     await executeCommand(
-      `rsync -a ${upgradeProjectPath}/ ${currentProjectPath}/`
+      `rsync -a --delete --exclude=.git/ ${upgradeProjectPath}/ ${currentProjectPath}/`
     );
 
     // Generate the diff
-    await executeCommand(
-      `cd ${currentProjectPath} && git diff > ${diffPath} && cd ../`
-    );
+    await executeCommand(`
+      cd ${currentProjectPath} && 
+      git add . &&
+      git diff --staged > ${diffPath} && 
+      cd ../
+    `);
 
     // Read the diff
     const differences = fs.readFileSync(diffPath, "utf8");
