@@ -2,15 +2,24 @@ import {
   getFeaturesString,
   getT3Versions,
   type DiffLocation,
+  getFeatureUrl,
 } from "@/lib/utils";
-import { type File as FileData } from "gitdiff-parser";
+import type { Hunk as HunkData, File as FileData } from "gitdiff-parser";
 import { type GetStaticProps, type NextPage } from "next";
-import { Diff, Hunk, parseDiff } from "react-diff-view";
+import {
+  Diff,
+  Hunk,
+  type ViewType,
+  parseDiff,
+  Decoration,
+} from "react-diff-view";
 
 import generateDiff from "@/lib/generateDiff";
 import fs from "fs";
 import { useRouter } from "next/router";
 import path from "path";
+import { useState } from "react";
+import { CheckIcon, XIcon } from "lucide-react";
 
 export const getStaticPaths = async () => {
   const t3Versions = await getT3Versions();
@@ -166,30 +175,185 @@ export const getStaticProps: GetStaticProps<Props, Params> = async (
   return {
     props: {
       diffText: differences,
+      versionsAndFeatures,
     },
   };
 };
 
-const DiffPage: NextPage<{ diffText: string }> = ({ diffText }) => {
+const DiffPage: NextPage<{
+  diffText: string;
+  versionsAndFeatures: DiffLocation;
+}> = ({ diffText, versionsAndFeatures }) => {
   const router = useRouter();
+  const [viewType, setViewType] = useState<ViewType>("split");
+
+  const files = parseDiff(diffText ?? "");
+
+  const [expandedDiffs, setExpandedDiffs] = useState<boolean[]>(
+    Array.from({ length: files.length }, () => true)
+  );
+
   if (router.isFallback) {
     return <div>Loading...</div>;
   }
 
-  const files = parseDiff(diffText);
-
-  const renderFile = ({ oldRevision, newRevision, type, hunks }: FileData) => (
-    <Diff
-      key={`${oldRevision}-${newRevision}`}
-      viewType="split"
-      diffType={type}
-      hunks={hunks}
-    >
-      {(hunks) => hunks.map((hunk) => <Hunk key={hunk.content} hunk={hunk} />)}
-    </Diff>
+  const renderHunk = (hunk: HunkData) => (
+    <>
+      <Decoration
+        key={`decoration-${hunk.content}`}
+        className="bg-gray-100 text-gray-400"
+      >
+        <span className="pl-20">{hunk.content}</span>
+      </Decoration>
+      <Hunk key={`hunk-${hunk.content}`} hunk={hunk} />
+    </>
   );
 
-  return <div>{files.map(renderFile)}</div>;
+  const FileComponent = ({
+    file,
+    isExpanded,
+    setIsExpanded,
+  }: {
+    file: FileData;
+    isExpanded: boolean;
+    setIsExpanded: (a: boolean) => void;
+  }) => {
+    const { oldRevision, newRevision, type, hunks, oldPath, newPath } = file;
+
+    return (
+      <div key={`${oldRevision}-${newRevision}`}>
+        <button
+          className={`flex w-full flex-row justify-between p-4 font-mono ${
+            isExpanded ? "border-b-2" : ""
+          }`}
+          onClick={() => setIsExpanded(!isExpanded)}
+        >
+          <div className="flex flex-row gap-4">
+            <div className="my-auto rounded-[4px] border border-gray-500 px-1 text-gray-500">
+              {type === "modify"
+                ? "CHANGED"
+                : type === "add"
+                ? "ADDED"
+                : type === "delete"
+                ? "DELETED"
+                : "UNKNOWN"}
+            </div>
+            <h1>
+              {oldPath === "/dev/null"
+                ? newPath
+                : newPath === "/dev/null"
+                ? oldPath
+                : oldPath === newPath
+                ? newPath
+                : oldPath + " → " + newPath}
+            </h1>
+          </div>
+
+          <div className="my-auto rounded-[4px] border border-gray-500 px-1 text-gray-500">
+            {isExpanded ? "Collapse" : "Expand"}
+          </div>
+        </button>
+        {isExpanded && (
+          <Diff viewType={viewType} diffType={type} hunks={hunks}>
+            {(hunks) => hunks.map(renderHunk)}
+          </Diff>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <main className="min-h-screen bg-gray-200 py-4">
+      <h1 className="mb-4 text-center text-4xl font-extrabold tracking-tight sm:text-5xl">
+        Changes from {versionsAndFeatures?.currentVersion} to{" "}
+        {versionsAndFeatures?.upgradeVersion}
+      </h1>
+      <ul className="mx-2 my-3 grid grid-cols-1 justify-center gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
+        {Object.entries(versionsAndFeatures.features).map(
+          ([feature, enabled]) => (
+            <li
+              key={feature}
+              className="col-span-1 flex rounded-md border border-gray-200 bg-white shadow-sm transition-all hover:shadow-md"
+            >
+              <div
+                className={`flex w-16 shrink-0 items-center justify-center rounded-l-md text-sm font-medium text-white ${
+                  enabled ? "bg-green-500" : "bg-red-500"
+                }`}
+              >
+                {enabled ? <CheckIcon /> : <XIcon />}
+              </div>
+              <button
+                className="flex flex-1 items-center justify-between truncate rounded-r-md px-4 py-2 text-left"
+                onClick={() => window.open(getFeatureUrl(feature), "_blank")}
+              >
+                <div className="flex-1 truncate text-sm">
+                  <span className="font-medium text-gray-900 hover:text-gray-600">
+                    {feature}
+                  </span>
+                </div>
+                <div className="shrink-0 pr-2">
+                  <div className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                    <span className="sr-only">Open website</span>
+                    <svg
+                      className="h-5 w-5"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 5l7 7-7 7"
+                      />
+                    </svg>
+                  </div>
+                </div>
+              </button>
+            </li>
+          )
+        )}
+      </ul>
+
+      <div className="flex flex-col items-center">
+        <div className="flex">
+          <button
+            className={`${
+              viewType === "split" ? "bg-gray-300" : "bg-gray-200"
+            } rounded-l-xl border-y border-l border-gray-300 px-4 py-2 transition-all`}
+            onClick={() => setViewType("split")}
+          >
+            Split
+          </button>
+          <button
+            className={`${
+              viewType === "unified" ? "bg-gray-300" : "bg-gray-200"
+            } rounded-r-xl border-y border-r border-gray-300 px-4 py-2 transition-all`}
+            onClick={() => setViewType("unified")}
+          >
+            Unified
+          </button>
+        </div>
+      </div>
+
+      {files.map((file, index) => (
+        <div
+          key={file.newPath}
+          className="m-2 my-4 rounded-xl bg-white shadow-lg"
+        >
+          <FileComponent
+            file={file}
+            isExpanded={expandedDiffs[index] ?? true}
+            setIsExpanded={(a) => {
+              expandedDiffs[index] = a;
+              setExpandedDiffs([...expandedDiffs]);
+            }}
+          />
+        </div>
+      ))}
+    </main>
+  );
 };
 
 export default DiffPage;

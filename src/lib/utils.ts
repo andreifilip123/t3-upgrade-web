@@ -58,6 +58,18 @@ export const getFeaturesString = (features: Features) => {
     .join("-");
 };
 
+export const getFeatureUrl = (feature: string) => {
+  if (feature === "nextAuth") {
+    return "https://next-auth.js.org/";
+  } else if (feature === "prisma") {
+    return "https://www.prisma.io/";
+  } else if (feature === "trpc") {
+    return "https://trpc.io/";
+  } else if (feature === "tailwind") {
+    return "https://tailwindcss.com/";
+  }
+};
+
 export interface DiffLocation {
   currentVersion: string;
   upgradeVersion: string;
