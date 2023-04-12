@@ -40,7 +40,7 @@ export const getDiffPath = ({
   );
 };
 
-export const getMissingDiffs = async () => {
+export const getMissingDiffs = async (count: number) => {
   const t3Versions = await getT3Versions();
   const sortedT3Versions = t3Versions.sort((a, b) => {
     const aParts = a.split(".").map(Number);
@@ -63,9 +63,7 @@ export const getMissingDiffs = async () => {
 
   const existingDiffsMap: { [key: string]: boolean } = existingDiffs.reduce(
     (acc, diff) => {
-      const versionsAndFeatures = extractVersionsAndFeatures(
-        diff
-      ) as DiffLocation;
+      const versionsAndFeatures = extractVersionsAndFeatures(diff);
 
       const { currentVersion, upgradeVersion, features } = versionsAndFeatures;
 
@@ -108,7 +106,5 @@ export const getMissingDiffs = async () => {
     }
   }
 
-  console.log(newDiffsMap);
-
-  return Object.keys(newDiffsMap);
+  return Object.keys(newDiffsMap).slice(0, count);
 };
