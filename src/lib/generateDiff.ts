@@ -1,22 +1,9 @@
-import { exec } from "child_process";
 import fs from "fs";
 import path from "path";
 import { z } from "zod";
-import { getDiffPath } from "./utils";
+import { executeCommand, getDiffPath } from "./fileUtils";
 
-const executeCommand = (command: string) => {
-  return new Promise((resolve, reject) => {
-    exec(command, (error, stdout) => {
-      if (error) {
-        reject(error);
-        return;
-      }
-      resolve(stdout);
-    });
-  });
-};
-
-const Params = z.object({
+export const paramsSchema = z.object({
   currentVersion: z.string(),
   upgradeVersion: z.string(),
   features: z.object({
@@ -27,14 +14,15 @@ const Params = z.object({
   }),
 });
 
-type Params = z.infer<typeof Params>;
+type Params = z.infer<typeof paramsSchema>;
 
 export default async function generateDiff(params: Params) {
-  const { success } = Params.safeParse(params);
+  const { success } = paramsSchema.safeParse(params);
   if (!success) {
     return { error: "Invalid request body" };
   }
-  const { currentVersion, upgradeVersion, features } = Params.parse(params);
+  const { currentVersion, upgradeVersion, features } =
+    paramsSchema.parse(params);
   const featureFlags = Object.entries(features)
     .filter(([, value]) => value)
     .map(([key]) => `--${key}=true`)

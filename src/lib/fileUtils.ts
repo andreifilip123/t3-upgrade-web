@@ -1,0 +1,114 @@
+import { exec } from "child_process";
+import fs from "fs";
+import path from "path";
+import {
+  arrangements,
+  extractVersionsAndFeatures,
+  getFeaturesString,
+  getT3Versions,
+  type Features,
+} from "./utils";
+
+export interface DiffLocation {
+  currentVersion: string;
+  upgradeVersion: string;
+  features: Features;
+}
+
+export const executeCommand = (command: string) => {
+  return new Promise((resolve, reject) => {
+    exec(command, (error, stdout) => {
+      if (error) {
+        reject(error);
+        return;
+      }
+      resolve(stdout);
+    });
+  });
+};
+
+export const getDiffPath = ({
+  currentVersion,
+  upgradeVersion,
+  features,
+}: DiffLocation) => {
+  const featuresString = getFeaturesString(features);
+  return path.join(
+    process.cwd(),
+    "diffs",
+    `diff-${currentVersion}-${upgradeVersion}-${featuresString}.patch`
+  );
+};
+
+export const getMissingDiffs = async () => {
+  const t3Versions = await getT3Versions();
+  const sortedT3Versions = t3Versions.sort((a, b) => {
+    const aParts = a.split(".").map(Number);
+    const bParts = b.split(".").map(Number);
+
+    for (let i = 0; i < aParts.length; i++) {
+      const aPart = aParts[i] as number;
+      const bPart = bParts[i] as number;
+      if (aPart > bPart) {
+        return 1;
+      } else if (aPart < bPart) {
+        return -1;
+      }
+    }
+
+    return 0;
+  });
+
+  const existingDiffs = fs.readdirSync(path.join(process.cwd(), "diffs"));
+
+  const existingDiffsMap: { [key: string]: boolean } = existingDiffs.reduce(
+    (acc, diff) => {
+      const versionsAndFeatures = extractVersionsAndFeatures(
+        diff
+      ) as DiffLocation;
+
+      const { currentVersion, upgradeVersion, features } = versionsAndFeatures;
+
+      return {
+        ...acc,
+        [`${currentVersion}..${upgradeVersion}-${getFeaturesString(features)}`]:
+          true,
+      };
+    },
+    {}
+  );
+  const newDiffsMap: { [key: string]: boolean } = {};
+
+  const features = ["nextAuth", "prisma", "trpc", "tailwind"];
+
+  for (let i = 0; i < sortedT3Versions.length; i++) {
+    const currentVersion = sortedT3Versions[i] as string;
+    for (let j = i + 1; j < sortedT3Versions.length; j++) {
+      const upgradeVersion = sortedT3Versions[j] as string;
+      const combinations = arrangements(features);
+
+      for (const combination of combinations) {
+        const features: Features = {
+          nextAuth: combination.includes("nextAuth"),
+          prisma: combination.includes("prisma"),
+          trpc: combination.includes("trpc"),
+          tailwind: combination.includes("tailwind"),
+        };
+
+        const key = `${currentVersion}..${upgradeVersion}-${getFeaturesString(
+          features
+        )}`;
+
+        if (existingDiffsMap[key]) {
+          continue;
+        }
+
+        newDiffsMap[key] = true;
+      }
+    }
+  }
+
+  console.log(newDiffsMap);
+
+  return Object.keys(newDiffsMap);
+};

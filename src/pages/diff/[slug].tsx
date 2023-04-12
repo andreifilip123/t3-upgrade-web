@@ -1,25 +1,26 @@
 import {
+  extractVersionsAndFeatures,
+  getFeatureUrl,
   getFeaturesString,
   getT3Versions,
-  type DiffLocation,
-  getFeatureUrl,
 } from "@/lib/utils";
-import type { Hunk as HunkData, File as FileData } from "gitdiff-parser";
+import type { File as FileData, Hunk as HunkData } from "gitdiff-parser";
 import { type GetStaticProps, type NextPage } from "next";
 import {
+  Decoration,
   Diff,
   Hunk,
-  type ViewType,
   parseDiff,
-  Decoration,
+  type ViewType,
 } from "react-diff-view";
 
+import { type DiffLocation } from "@/lib/fileUtils";
 import generateDiff from "@/lib/generateDiff";
 import fs from "fs";
+import { CheckIcon, XIcon } from "lucide-react";
 import { useRouter } from "next/router";
 import path from "path";
 import { useState } from "react";
-import { CheckIcon, XIcon } from "lucide-react";
 
 export const getStaticPaths = async () => {
   const t3Versions = await getT3Versions();
@@ -89,40 +90,6 @@ export const getStaticPaths = async () => {
       },
     })),
     fallback: true,
-  };
-};
-
-type VersionAndFeatures = {
-  currentVersion: string;
-  upgradeVersion: string;
-  nextAuth: string | null;
-  prisma: string | null;
-  trpc: string | null;
-  tailwind: string | null;
-};
-
-const extractVersionsAndFeatures = (slug: string): DiffLocation | null => {
-  const regex =
-    /(?<currentVersion>\d+\.\d+\.\d+)\.\.(?<upgradeVersion>\d+\.\d+\.\d+)(?:-(?<nextAuth>nextAuth))?(?:-(?<prisma>prisma))?(?:-(?<trpc>trpc))?(?:-(?<tailwind>tailwind))?/;
-  const match =
-    (slug.match(regex) as RegExpMatchArray & { groups: VersionAndFeatures }) ||
-    null;
-
-  if (!match) {
-    return null;
-  }
-
-  const { currentVersion, upgradeVersion, nextAuth, prisma, trpc, tailwind } =
-    match.groups;
-  return {
-    currentVersion,
-    upgradeVersion,
-    features: {
-      nextAuth: !!nextAuth,
-      prisma: !!prisma,
-      trpc: !!trpc,
-      tailwind: !!tailwind,
-    },
   };
 };
 

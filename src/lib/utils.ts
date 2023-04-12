@@ -1,6 +1,6 @@
 import clsx, { type ClassValue } from "clsx";
-import path from "path";
 import { twMerge } from "tailwind-merge";
+import { type DiffLocation } from "./fileUtils";
 
 export const cn = (...inputs: ClassValue[]) => {
   return twMerge(clsx(inputs));
@@ -44,7 +44,7 @@ export const getT3VersionsGroupedByMajor = async () => {
   return versionsGroupedByMajor;
 };
 
-interface Features {
+export interface Features {
   nextAuth?: boolean;
   prisma?: boolean;
   trpc?: boolean;
@@ -70,21 +70,56 @@ export const getFeatureUrl = (feature: string) => {
   }
 };
 
-export interface DiffLocation {
+type VersionAndFeaturesRegex = {
   currentVersion: string;
   upgradeVersion: string;
-  features: Features;
-}
+  nextAuth: string | null;
+  prisma: string | null;
+  trpc: string | null;
+  tailwind: string | null;
+};
 
-export const getDiffPath = ({
-  currentVersion,
-  upgradeVersion,
-  features,
-}: DiffLocation) => {
-  const featuresString = getFeaturesString(features);
-  return path.join(
-    process.cwd(),
-    "diffs",
-    `diff-${currentVersion}-${upgradeVersion}-${featuresString}.patch`
-  );
+export const extractVersionsAndFeatures = (
+  slug: string
+): DiffLocation | null => {
+  const regex =
+    /(?<currentVersion>\d+\.\d+\.\d+)\.\.(?<upgradeVersion>\d+\.\d+\.\d+)(?:-(?<nextAuth>nextAuth))?(?:-(?<prisma>prisma))?(?:-(?<trpc>trpc))?(?:-(?<tailwind>tailwind))?/;
+  const match =
+    (slug.match(regex) as RegExpMatchArray & {
+      groups: VersionAndFeaturesRegex;
+    }) || null;
+
+  if (!match) {
+    return null;
+  }
+
+  const { currentVersion, upgradeVersion, nextAuth, prisma, trpc, tailwind } =
+    match.groups;
+  return {
+    currentVersion,
+    upgradeVersion,
+    features: {
+      nextAuth: !!nextAuth,
+      prisma: !!prisma,
+      trpc: !!trpc,
+      tailwind: !!tailwind,
+    },
+  };
+};
+
+export const arrangements = (array: string[]) => {
+  const result: string[][] = [[]];
+
+  for (const element of array) {
+    const length = result.length;
+    for (let i = 0; i < length; i++) {
+      const subset = result[i]!.slice();
+      subset.push(element);
+      result.push(subset);
+    }
+  }
+
+  return result
+    .filter((subset) => subset.length > 0)
+    .map((subset) => subset.sort().join("-"));
 };
