@@ -70,39 +70,18 @@ export const getFeatureUrl = (feature: string) => {
   }
 };
 
-type VersionAndFeaturesRegex = {
-  currentVersion: string;
-  upgradeVersion: string;
-  nextAuth: string | null;
-  prisma: string | null;
-  trpc: string | null;
-  tailwind: string | null;
-};
+export const extractVersionsAndFeatures = (slug: string): DiffLocation => {
+  const versions = slug.split("-")[0] as string;
+  const [currentVersion, upgradeVersion] = versions.split("..");
 
-export const extractVersionsAndFeatures = (
-  slug: string
-): DiffLocation | null => {
-  const regex =
-    /(?<currentVersion>\d+\.\d+\.\d+)\.\.(?<upgradeVersion>\d+\.\d+\.\d+)(?:-(?<nextAuth>nextAuth))?(?:-(?<prisma>prisma))?(?:-(?<trpc>trpc))?(?:-(?<tailwind>tailwind))?/;
-  const match =
-    (slug.match(regex) as RegExpMatchArray & {
-      groups: VersionAndFeaturesRegex;
-    }) || null;
-
-  if (!match) {
-    return null;
-  }
-
-  const { currentVersion, upgradeVersion, nextAuth, prisma, trpc, tailwind } =
-    match.groups;
   return {
-    currentVersion,
-    upgradeVersion,
+    currentVersion: currentVersion as string,
+    upgradeVersion: upgradeVersion as string,
     features: {
-      nextAuth: !!nextAuth,
-      prisma: !!prisma,
-      trpc: !!trpc,
-      tailwind: !!tailwind,
+      nextAuth: slug.includes("nextAuth"),
+      prisma: slug.includes("prisma"),
+      trpc: slug.includes("trpc"),
+      tailwind: slug.includes("tailwind"),
     },
   };
 };
