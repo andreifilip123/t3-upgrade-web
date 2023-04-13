@@ -116,5 +116,8 @@ export const getMissingDiffs = async (count: number) => {
     }
   }
 
-  return Object.keys(newDiffsMap).slice(0, count);
+  const start = 0;
+  const end = Math.min(count, Object.keys(newDiffsMap).length);
+
+  return Object.keys(newDiffsMap).slice(start, end);
 };
