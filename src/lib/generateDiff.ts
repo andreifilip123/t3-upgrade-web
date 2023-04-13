@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import { z } from "zod";
 import { executeCommand, getDiffPath } from "./fileUtils";
+import { getFeaturesString } from "./utils";
 
 export const paramsSchema = z.object({
   currentVersion: z.string(),
@@ -27,9 +28,11 @@ export default async function generateDiff(params: Params) {
     .filter(([, value]) => value)
     .map(([key]) => `--${key}=true`)
     .join(" ");
-  
+
   const diffPath = getDiffPath({ currentVersion, upgradeVersion, features });
-  const diffDir = diffPath.split(".patch")[0] as string;
+  const diffDir = `/tmp/${currentVersion}..${upgradeVersion}-${getFeaturesString(
+    features
+  )}`;
 
   const currentProjectPath = path.join(diffDir, "current");
   const upgradeProjectPath = path.join(diffDir, "upgrade");
