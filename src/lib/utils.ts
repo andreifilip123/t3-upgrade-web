@@ -1,6 +1,5 @@
 import clsx, { type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { type DiffLocation } from "./fileUtils";
 
 export const cn = (...inputs: ClassValue[]) => {
   return twMerge(clsx(inputs));
@@ -70,13 +69,27 @@ export const getFeatureUrl = (feature: string) => {
   }
 };
 
-export const extractVersionsAndFeatures = (slug: string): DiffLocation => {
-  const versions = slug.split("-")[0] as string;
-  const [currentVersion, upgradeVersion] = versions.split("..");
+type VersionsRegex = {
+  currentVersion: string;
+  upgradeVersion: string;
+};
+
+export const extractVersionsAndFeatures = (slug: string) => {
+  const regex =
+    /(?<currentVersion>\d+\.\d+\.\d+).*(?<upgradeVersion>\d+\.\d+\.\d+)/;
+  const match =
+    (slug.match(regex) as RegExpMatchArray & {
+      groups: VersionsRegex;
+    }) || null;
+
+  if (!match) {
+    return null;
+  }
+  const { currentVersion, upgradeVersion } = match.groups;
 
   return {
-    currentVersion: currentVersion as string,
-    upgradeVersion: upgradeVersion as string,
+    currentVersion: currentVersion,
+    upgradeVersion: upgradeVersion,
     features: {
       nextAuth: slug.includes("nextAuth"),
       prisma: slug.includes("prisma"),

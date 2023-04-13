@@ -3,9 +3,7 @@ import { type GetServerSideProps, type NextPage } from "next";
 import { useRouter } from "next/router";
 
 export const getServerSideProps: GetServerSideProps = async ({ params }) => {
-  const { missingDiffs, diffs } = await batchRequests(Number(params?.count));
-
-  console.log(missingDiffs, diffs);
+  const { missingDiffs } = await batchRequests(Number(params?.count));
 
   return {
     props: {
