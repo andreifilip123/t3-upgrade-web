@@ -40,6 +40,31 @@ export const getDiffPath = ({
   );
 };
 
+export const getExistingDiffsMap = () => {
+  const existingDiffs = fs.readdirSync(path.join(process.cwd(), "diffs"));
+
+  const diffsMap: { [key: string]: boolean } = existingDiffs.reduce(
+    (acc, diff) => {
+      const versionsAndFeatures = extractVersionsAndFeatures(diff);
+
+      if (!versionsAndFeatures) {
+        return acc;
+      }
+
+      const { currentVersion, upgradeVersion, features } = versionsAndFeatures;
+
+      return {
+        ...acc,
+        [`${currentVersion}..${upgradeVersion}-${getFeaturesString(features)}`]:
+          true,
+      };
+    },
+    {}
+  );
+
+  return diffsMap;
+};
+
 export const getMissingDiffs = async (count: number) => {
   const t3Versions = await getT3Versions();
   const sortedT3Versions = t3Versions.sort((a, b) => {
@@ -59,22 +84,7 @@ export const getMissingDiffs = async (count: number) => {
     return 0;
   });
 
-  const existingDiffs = fs.readdirSync(path.join(process.cwd(), "diffs"));
-
-  const existingDiffsMap: { [key: string]: boolean } = existingDiffs.reduce(
-    (acc, diff) => {
-      const versionsAndFeatures = extractVersionsAndFeatures(diff);
-
-      const { currentVersion, upgradeVersion, features } = versionsAndFeatures;
-
-      return {
-        ...acc,
-        [`${currentVersion}..${upgradeVersion}-${getFeaturesString(features)}`]:
-          true,
-      };
-    },
-    {}
-  );
+  const existingDiffsMap = getExistingDiffsMap();
   const newDiffsMap: { [key: string]: boolean } = {};
 
   const features = ["nextAuth", "prisma", "trpc", "tailwind"];

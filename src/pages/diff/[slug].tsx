@@ -1,9 +1,4 @@
-import {
-  extractVersionsAndFeatures,
-  getFeatureUrl,
-  getFeaturesString,
-  getT3Versions,
-} from "@/lib/utils";
+import { extractVersionsAndFeatures, getFeatureUrl } from "@/lib/utils";
 import type { File as FileData, Hunk as HunkData } from "gitdiff-parser";
 import { type GetStaticProps, type NextPage } from "next";
 import {
@@ -14,77 +9,17 @@ import {
   type ViewType,
 } from "react-diff-view";
 
-import { type DiffLocation } from "@/lib/fileUtils";
+import { getExistingDiffsMap, type DiffLocation } from "@/lib/fileUtils";
 import generateDiff from "@/lib/generateDiff";
-import fs from "fs";
 import { CheckIcon, XIcon } from "lucide-react";
 import { useRouter } from "next/router";
-import path from "path";
 import { useState } from "react";
 
-export const getStaticPaths = async () => {
-  const t3Versions = await getT3Versions();
-  const sortedT3Versions = t3Versions.sort((a, b) => {
-    const aParts = a.split(".").map(Number);
-    const bParts = b.split(".").map(Number);
-
-    for (let i = 0; i < aParts.length; i++) {
-      const aPart = aParts[i] as number;
-      const bPart = bParts[i] as number;
-      if (aPart > bPart) {
-        return 1;
-      } else if (aPart < bPart) {
-        return -1;
-      }
-    }
-
-    return 0;
-  });
-
-  const latestVersion = sortedT3Versions[sortedT3Versions.length - 1] as string;
-
-  const existingDiffs = fs.readdirSync(path.join(process.cwd(), "diffs"));
-
-  const diffsMap: { [key: string]: boolean } = existingDiffs.reduce(
-    (acc, diff) => {
-      const versionsAndFeatures = extractVersionsAndFeatures(diff);
-
-      if (!versionsAndFeatures) {
-        return acc;
-      }
-
-      const { currentVersion, upgradeVersion, features } = versionsAndFeatures;
-
-      return {
-        ...acc,
-        [`${currentVersion}..${upgradeVersion}-${getFeaturesString(features)}`]:
-          true,
-      };
-    },
-    {}
-  );
-
-  const newT3Versions = sortedT3Versions.filter((version) => {
-    const key = `${version}..${latestVersion}-nextAuth-prisma-trpc-tailwind`;
-    // remove existing diffs
-    if (diffsMap[key]) {
-      return false;
-    }
-
-    return true;
-  });
-
-  const mostRecentT3Versions = newT3Versions.slice(
-    Math.min(newT3Versions.length - 10, 10)
-  );
-
-  mostRecentT3Versions.forEach((version) => {
-    diffsMap[`${version}..${latestVersion}-nextAuth-prisma-trpc-tailwind`] =
-      true;
-  });
+export const getStaticPaths = () => {
+  const existingDiffsMap = getExistingDiffsMap();
 
   return {
-    paths: Object.keys(diffsMap).map((slug) => ({
+    paths: Object.keys(existingDiffsMap).map((slug) => ({
       params: {
         slug,
       },
