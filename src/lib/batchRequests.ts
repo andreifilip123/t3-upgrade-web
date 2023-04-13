@@ -11,5 +11,8 @@ export default async function batchRequests(count: number) {
 
   const responses = await Promise.all(promises);
 
-  return responses;
+  return {
+    missingDiffs,
+    diffs: responses,
+  };
 }
