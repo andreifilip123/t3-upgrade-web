@@ -27,9 +27,12 @@ export default async function generateDiff(params: Params) {
     .filter(([, value]) => value)
     .map(([key]) => `--${key}=true`)
     .join(" ");
+  
+  const diffPath = getDiffPath({ currentVersion, upgradeVersion, features });
+  const diffDir = diffPath.split(".patch")[0] as string;
 
-  const currentProjectPath = path.join(process.cwd(), "current");
-  const upgradeProjectPath = path.join(process.cwd(), "upgrade");
+  const currentProjectPath = path.join(diffDir, "current");
+  const upgradeProjectPath = path.join(diffDir, "upgrade");
 
   // Make sure the directories don't exist
   await executeCommand(`rm -rf ${currentProjectPath}`);
@@ -37,8 +40,6 @@ export default async function generateDiff(params: Params) {
 
   const getCommand = (version: string, path: string) =>
     `npx create-t3-app@${version} ${path} --CI ${featureFlags} --noGit --noInstall`;
-
-  const diffPath = getDiffPath({ currentVersion, upgradeVersion, features });
 
   if (fs.existsSync(diffPath)) {
     const differences = fs.readFileSync(diffPath, "utf8");
@@ -75,17 +76,7 @@ export default async function generateDiff(params: Params) {
     // Read the diff
     const differences = fs.readFileSync(diffPath, "utf8");
 
-    await executeCommand(`rm -rf ${currentProjectPath}`);
-    await executeCommand(`rm -rf ${upgradeProjectPath}`);
-
-    const diffsFolder = path.join(process.cwd(), "diffs");
-
-    // Stage and commit all the changes in the diff directory
-    await executeCommand(`
-      git add ${diffsFolder} &&
-      git commit -m "Update diffs" &&
-      git push
-    `);
+    await executeCommand(`rm -rf ${diffDir}`);
 
     // Send the diff back to the client
     return { differences };
