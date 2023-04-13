@@ -3,26 +3,32 @@ import { type GetServerSideProps, type NextPage } from "next";
 import { useRouter } from "next/router";
 
 export const getServerSideProps: GetServerSideProps = async ({ params }) => {
+  const startTime = performance.now();
   const { missingDiffs } = await batchRequests(Number(params?.count));
+  const endTime = performance.now();
 
   return {
     props: {
       missingDiffs,
+      duration: endTime - startTime,
     },
   };
 };
 
 interface BatchPageProps {
   missingDiffs: string[];
+  duration: number;
 }
 
-const BatchPage: NextPage<BatchPageProps> = ({ missingDiffs }) => {
+const BatchPage: NextPage<BatchPageProps> = ({ missingDiffs, duration }) => {
   const { query } = useRouter();
   const { count } = query;
 
   return (
     <div>
-      <h1>Generated {count} diffs</h1>
+      <h1>
+        Generated {count} diffs in {duration}
+      </h1>
 
       {missingDiffs.length > 0 && (
         <div>
