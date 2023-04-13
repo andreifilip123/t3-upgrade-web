@@ -1,6 +1,5 @@
 import batchRequests from "@/lib/batchRequests";
 import { type GetServerSideProps, type NextPage } from "next";
-import { useRouter } from "next/router";
 
 export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   const startTime = performance.now();
@@ -20,28 +19,23 @@ interface BatchPageProps {
   duration: number;
 }
 
-const BatchPage: NextPage<BatchPageProps> = ({ missingDiffs, duration }) => {
-  const { query } = useRouter();
-  const { count } = query;
+const BatchPage: NextPage<BatchPageProps> = ({ missingDiffs, duration }) => (
+  <div>
+    <h1>
+      Generated {missingDiffs.length} diffs in {duration}
+    </h1>
 
-  return (
-    <div>
-      <h1>
-        Generated {count} diffs in {duration}
-      </h1>
-
-      {missingDiffs.length > 0 && (
-        <div>
-          <h2>Generated:</h2>
-          <ul>
-            {missingDiffs.map((missingDiff) => (
-              <li key={missingDiff}>{missingDiff}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </div>
-  );
-};
+    {missingDiffs.length > 0 && (
+      <div>
+        <h2>Generated:</h2>
+        <ul>
+          {missingDiffs.map((missingDiff) => (
+            <li key={missingDiff}>{missingDiff}</li>
+          ))}
+        </ul>
+      </div>
+    )}
+  </div>
+);
 
 export default BatchPage;
