@@ -121,7 +121,7 @@ const Home: NextPage = () => {
             <div>
               <p className="text-xl text-white">Current version:</p>
               <Select onValueChange={(value) => setCurrentVersion(value)}>
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-[180px] text-white">
                   <SelectValue placeholder="Select version" />
                 </SelectTrigger>
                 <SelectContent>
@@ -137,7 +137,7 @@ const Home: NextPage = () => {
                 onValueChange={(value) => setUpgradeVersion(value)}
                 disabled={!!noUpgradeAvailable}
               >
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-[180px] text-white">
                   <SelectValue
                     placeholder={
                       noUpgradeAvailable
