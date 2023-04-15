@@ -30,9 +30,10 @@ export default async function generateDiff(params: Params) {
     .join(" ");
 
   const diffPath = getDiffPath({ currentVersion, upgradeVersion, features });
-  const diffDir = `/tmp/${currentVersion}..${upgradeVersion}-${getFeaturesString(
-    features
-  )}`;
+  const featuresString = getFeaturesString(features);
+  const diffDir = `/tmp/${currentVersion}..${upgradeVersion}${
+    featuresString ? `-${featuresString}` : ""
+  }`;
 
   const currentProjectPath = path.join(diffDir, "current");
   const upgradeProjectPath = path.join(diffDir, "upgrade");
@@ -70,9 +71,9 @@ export default async function generateDiff(params: Params) {
 
     // Generate the diff
     await executeCommand(`
-      cd ${currentProjectPath} && 
+      cd ${currentProjectPath} &&
       git add . &&
-      git diff --staged > ${diffPath} && 
+      git diff --staged > ${diffPath} &&
       cd ../
     `);
 
