@@ -3,7 +3,7 @@ import { Inter } from "next/font/google";
 
 import "@/styles/globals.css";
 import "react-diff-view/style/index.css";
-import "../styles/prismjs.css";
+import "@/styles/prismjs.css";
 
 const inter = Inter({ subsets: ["latin"] });
 
