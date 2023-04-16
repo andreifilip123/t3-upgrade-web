@@ -1,5 +1,25 @@
 import clsx, { type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import {
+  tokenize as tokennizeReactDiffView,
+  markEdits,
+  HunkData,
+} from "react-diff-view";
+
+export const tokenize = (hunks: HunkData[]) => {
+  if (!hunks) {
+    return undefined;
+  }
+
+  try {
+    return tokennizeReactDiffView(hunks, {
+      highlight: false,
+      enhancers: [markEdits(hunks, { type: "block" })],
+    });
+  } catch (e) {
+    return undefined;
+  }
+};
 
 export const cn = (...inputs: ClassValue[]) => {
   return twMerge(clsx(inputs));
