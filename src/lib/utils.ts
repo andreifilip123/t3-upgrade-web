@@ -16,18 +16,16 @@ export const getT3Versions = async () => {
     "https://api.github.com/repos/t3-oss/create-t3-app/releases"
   );
 
-  const regexForVersion = /^create-t3-app@\d+\.\d+\.\d+$/;
-
-  const responseSchema = z.array(
-    z.object({ tag_name: z.string().regex(regexForVersion) })
-  );
+  const responseSchema = z.array(z.object({ tag_name: z.string() }));
   const parsed = responseSchema.safeParse(await response.json());
 
   if (!parsed.success) {
     return [];
   }
 
-  return parsed.data.map((release) => release.tag_name.split("@")[1] ?? "");
+  return parsed.data
+    .map((release) => release.tag_name.split("@")[1] ?? "")
+    .filter((v) => v !== "");
 };
 
 export const getT3VersionsGroupedByMajor = async () => {
