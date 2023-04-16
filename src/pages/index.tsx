@@ -40,13 +40,13 @@ const UpgradePanel: React.FC<{
 
     // filter out versions that are older than the current version
     const filteredVersions = versionOptions
-      .filter((version) => Number(version.major) >= Number(major))
-      .reduce<VersionsGroupedByMajor>((acc, version) => {
-        if (Number(version.major) === Number(major)) {
+      .filter((option) => Number(option.major) >= Number(major))
+      .reduce<VersionsGroupedByMajor>((acc, option) => {
+        if (Number(option.major) === Number(major)) {
           acc.push({
-            major: version.major,
+            major: option.major,
             versions: (
-              versionOptions.find((v) => v.major === version.major)?.versions ??
+              versionOptions.find((v) => v.major === option.major)?.versions ??
               []
             ).filter((version) => {
               const [, versionMinor, versionPatch] = version.split(".");
@@ -61,9 +61,9 @@ const UpgradePanel: React.FC<{
           });
         } else {
           acc.push({
-            major: version.major,
+            major: option.major,
             versions:
-              versionOptions.find((v) => v.major === version.major)?.versions ??
+              versionOptions.find((v) => v.major === option.major)?.versions ??
               [],
           });
         }
@@ -85,11 +85,11 @@ const UpgradePanel: React.FC<{
     if (!options.length) return null;
 
     return options
-      .filter((version) => version.versions.length > 0)
-      .map((version) => (
-        <SelectGroup key={version.major}>
-          <SelectLabel>{`${version.major}.x`}</SelectLabel>
-          {version.versions.map((minorVersion) => (
+      .filter((option) => option.versions.length > 0)
+      .map((option) => (
+        <SelectGroup key={option.major}>
+          <SelectLabel>{`${option.major}.x`}</SelectLabel>
+          {option.versions.map((minorVersion) => (
             <SelectItem key={minorVersion} value={minorVersion}>
               {minorVersion}
             </SelectItem>
