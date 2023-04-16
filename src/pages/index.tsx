@@ -9,6 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/Select";
 import {
+  Features,
   getT3VersionsGroupedByMajor,
   type VersionsGroupedByMajor,
 } from "@/lib/utils";
@@ -20,12 +21,13 @@ import { useEffect, useMemo, useState } from "react";
 
 const Home: NextPage = () => {
   const router = useRouter();
+
   const [versionOptions, setVersionOptions] = useState<VersionsGroupedByMajor>(
-    {}
+    []
   );
   const [currentVersion, setCurrentVersion] = useState<string | null>(null);
   const [upgradeVersion, setUpgradeVersion] = useState<string | null>(null);
-  const [features, setFeatures] = useState({
+  const [features, setFeatures] = useState<Features>({
     nextAuth: false,
     prisma: false,
     trpc: false,
@@ -35,34 +37,47 @@ const Home: NextPage = () => {
   const upgradeVersionOptions = useMemo(() => {
     if (!currentVersion) return versionOptions;
     const [major, minor, patch] = currentVersion.split(".");
-    const filteredVersions = Object.keys(versionOptions)
-      .filter((majorVersion) => Number(majorVersion) >= Number(major))
-      .reduce((acc, majorVersion) => {
-        if (Number(majorVersion) === Number(major)) {
-          const initialValues = versionOptions[majorVersion];
-          const filterValue = (version: string) => {
-            const [, versionMinor, versionPatch] = version.split(".");
-            if (Number(versionMinor) > Number(minor)) return true;
-            if (
-              Number(versionMinor) === Number(minor) &&
-              Number(versionPatch) > Number(patch)
-            )
-              return true;
-            return false;
-          };
-          acc[majorVersion] = initialValues?.filter(filterValue) || [];
+
+    // filter out versions that are older than the current version
+    const filteredVersions = versionOptions
+      .filter((version) => Number(version.major) >= Number(major))
+      .reduce<VersionsGroupedByMajor>((acc, version) => {
+        if (Number(version.major) === Number(major)) {
+          acc.push({
+            major: version.major,
+            versions: (
+              versionOptions.find((v) => v.major === version.major)?.versions ??
+              []
+            ).filter((version) => {
+              const [, versionMinor, versionPatch] = version.split(".");
+              if (Number(versionMinor) > Number(minor)) return true;
+              if (
+                Number(versionMinor) === Number(minor) &&
+                Number(versionPatch) > Number(patch)
+              )
+                return true;
+              return false;
+            }),
+          });
         } else {
-          acc[majorVersion] = versionOptions[majorVersion] || [];
+          acc.push({
+            major: version.major,
+            versions:
+              versionOptions.find((v) => v.major === version.major)?.versions ??
+              [],
+          });
         }
+
         return acc;
-      }, {} as VersionsGroupedByMajor);
+      }, []);
 
     // if only one major version is available and it has no versions, return empty object
-    if (Object.keys(filteredVersions).length === 1) {
-      const [majorVersion] = Object.keys(filteredVersions);
-      if (!majorVersion) return {};
-      if (!filteredVersions[majorVersion]?.length) return {};
-    }
+    if (
+      filteredVersions.length === 1 &&
+      filteredVersions[0]!.versions.length === 0
+    )
+      return [];
+
     return filteredVersions;
   }, [currentVersion, versionOptions]);
 
@@ -76,22 +91,23 @@ const Home: NextPage = () => {
   }, []);
 
   const renderSelectContent = (options: VersionsGroupedByMajor) => {
-    if (!Object.keys(options).length) return null;
-    return Object.keys(options)
-      .filter((majorVersion) => options[majorVersion]?.length)
-      .map((majorVersion) => (
-        <SelectGroup key={majorVersion}>
-          <SelectLabel>{`${majorVersion}.x`}</SelectLabel>
-          {options[majorVersion]?.map((version) => (
-            <SelectItem key={version} value={version}>
-              {version}
+    if (!options.length) return null;
+
+    return options
+      .filter((version) => version.versions.length > 0)
+      .map((version) => (
+        <SelectGroup key={version.major}>
+          <SelectLabel>{`${version.major}.x`}</SelectLabel>
+          {version.versions.map((minorVersion) => (
+            <SelectItem key={minorVersion} value={minorVersion}>
+              {minorVersion}
             </SelectItem>
           ))}
         </SelectGroup>
       ));
   };
 
-  const noUpgradeAvailable = !Object.keys(upgradeVersionOptions).length;
+  const noUpgradeAvailable = upgradeVersionOptions.length === 0;
 
   const goToDiff = () => {
     if (!currentVersion || !upgradeVersion) return;

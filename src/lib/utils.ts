@@ -1,43 +1,58 @@
 import clsx, { type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { z } from "zod";
 
 export const cn = (...inputs: ClassValue[]) => {
   return twMerge(clsx(inputs));
 };
 
-interface Release {
-  tag_name: string;
-}
-
-export interface VersionsGroupedByMajor {
-  [major: string]: string[];
-}
+export type VersionsGroupedByMajor = Array<{
+  major: string;
+  versions: string[];
+}>;
 
 export const getT3Versions = async () => {
   const response = await fetch(
     "https://api.github.com/repos/t3-oss/create-t3-app/releases"
   );
-  const data = (await response.json()) as Release[];
-  const versions = data.map((release) => release.tag_name.split("@")[1] ?? "");
-  const actualVersions = versions.filter((version) => version !== "");
 
-  return actualVersions;
+  const json = await response.json();
+
+  const regexForVersion = /^create-t3-app@\d+\.\d+\.\d+$/;
+
+  const responseSchema = z.array(
+    z.object({ tag_name: z.string().regex(regexForVersion) })
+  );
+  const parsed = responseSchema.safeParse(json);
+
+  if (!parsed.success) {
+    return [];
+  }
+
+  return parsed.data.map((release) => release.tag_name.split("@")[1] ?? "");
 };
 
 export const getT3VersionsGroupedByMajor = async () => {
   const actualVersions = await getT3Versions();
 
-  const versionsGroupedByMajor: VersionsGroupedByMajor = {};
+  const versionsGroupedByMajor: VersionsGroupedByMajor = [];
 
   actualVersions.forEach((version) => {
     const [major] = version.split(".");
-    if (!major) {
-      return;
+    if (!major) return;
+
+    const majorGroup = versionsGroupedByMajor.find(
+      (group) => group.major === major
+    );
+
+    if (majorGroup) {
+      majorGroup.versions.push(version);
+    } else {
+      versionsGroupedByMajor.push({
+        major,
+        versions: [version],
+      });
     }
-    if (!versionsGroupedByMajor[major]) {
-      versionsGroupedByMajor[major] = [];
-    }
-    versionsGroupedByMajor[major]?.push(version);
   });
 
   return versionsGroupedByMajor;
