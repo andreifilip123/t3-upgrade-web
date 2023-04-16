@@ -9,7 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/Select";
 import {
-  Features,
+  type Features,
   getT3VersionsGroupedByMajor,
   type VersionsGroupedByMajor,
 } from "@/lib/utils";
@@ -74,7 +74,7 @@ const Home: NextPage = () => {
     // if only one major version is available and it has no versions, return empty object
     if (
       filteredVersions.length === 1 &&
-      filteredVersions[0]!.versions.length === 0
+      (filteredVersions[0]?.versions.length ?? []) === 0
     )
       return [];
 

@@ -16,14 +16,12 @@ export const getT3Versions = async () => {
     "https://api.github.com/repos/t3-oss/create-t3-app/releases"
   );
 
-  const json = await response.json();
-
   const regexForVersion = /^create-t3-app@\d+\.\d+\.\d+$/;
 
   const responseSchema = z.array(
     z.object({ tag_name: z.string().regex(regexForVersion) })
   );
-  const parsed = responseSchema.safeParse(json);
+  const parsed = responseSchema.safeParse(await response.json());
 
   if (!parsed.success) {
     return [];
@@ -120,7 +118,7 @@ export const arrangements = (array: string[]) => {
   for (const element of array) {
     const length = result.length;
     for (let i = 0; i < length; i++) {
-      const subset = result[i]!.slice();
+      const subset = result[i]?.slice() ?? [];
       subset.push(element);
       result.push(subset);
     }
