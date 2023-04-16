@@ -1,6 +1,32 @@
 import clsx, { type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { z } from "zod";
+import {
+  tokenize as tokennizeReactDiffView,
+  markEdits,
+  HunkData,
+} from "react-diff-view";
+import refractor from "refractor";
+import ts from "refractor/lang/typescript";
+
+export const tokenize = (hunks: HunkData[]) => {
+  if (!hunks) {
+    return undefined;
+  }
+
+  refractor.register(ts);
+
+  try {
+    return tokennizeReactDiffView(hunks, {
+      highlight: true,
+      enhancers: [markEdits(hunks, { type: "block" })],
+      language: "typescript",
+      refractor,
+    });
+  } catch (e) {
+    return undefined;
+  }
+};
 
 export const cn = (...inputs: ClassValue[]) => {
   return twMerge(clsx(inputs));

@@ -1,4 +1,8 @@
-import { extractVersionsAndFeatures, getFeatureUrl } from "@/lib/utils";
+import {
+  extractVersionsAndFeatures,
+  getFeatureUrl,
+  tokenize,
+} from "@/lib/utils";
 import type { File as FileData, Hunk as HunkData } from "gitdiff-parser";
 import { type GetStaticProps, type NextPage } from "next";
 import {
@@ -13,7 +17,7 @@ import { getExistingDiffsMap, type DiffLocation } from "@/lib/fileUtils";
 import generateDiff from "@/lib/generateDiff";
 import { CheckIcon, XIcon } from "lucide-react";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 export const getStaticPaths = () => {
   const existingDiffsMap = getExistingDiffsMap();
@@ -99,18 +103,6 @@ const DiffPage: NextPage<{
     return <div>Loading...</div>;
   }
 
-  const renderHunk = (hunk: HunkData) => (
-    <>
-      <Decoration
-        key={`decoration-${hunk.content}`}
-        className="bg-gray-100 text-gray-400"
-      >
-        <span className="pl-20">{hunk.content}</span>
-      </Decoration>
-      <Hunk key={`hunk-${hunk.content}`} hunk={hunk} />
-    </>
-  );
-
   const FileComponent = ({
     file,
     isExpanded,
@@ -121,6 +113,8 @@ const DiffPage: NextPage<{
     setIsExpanded: (a: boolean) => void;
   }) => {
     const { oldRevision, newRevision, type, hunks, oldPath, newPath } = file;
+
+    const tokens = useMemo(() => tokenize(hunks), [hunks]);
 
     return (
       <div key={`${oldRevision}-${newRevision}`}>
@@ -156,8 +150,25 @@ const DiffPage: NextPage<{
           </div>
         </button>
         {isExpanded && (
-          <Diff viewType={viewType} diffType={type} hunks={hunks}>
-            {(hunks) => hunks.map(renderHunk)}
+          <Diff
+            viewType={viewType}
+            diffType={type}
+            hunks={hunks}
+            tokens={tokens}
+          >
+            {(hunks) =>
+              hunks.map((hunk, i) => (
+                <>
+                  <Decoration
+                    key={`decoration-${hunk.content}-${i}`}
+                    className="bg-gray-100 text-gray-400"
+                  >
+                    <span className="pl-20">{hunk.content}</span>
+                  </Decoration>
+                  <Hunk key={`hunk-${hunk.content}`} hunk={hunk} />
+                </>
+              ))
+            }
           </Diff>
         )}
       </div>
@@ -241,7 +252,7 @@ const DiffPage: NextPage<{
 
       {files.map((file, index) => (
         <div
-          key={file.newPath}
+          key={`${file.newPath}-${index}`}
           className="m-2 my-4 rounded-xl bg-white shadow-lg"
         >
           <FileComponent
