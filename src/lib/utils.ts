@@ -53,7 +53,9 @@ export const getT3VersionsGroupedByMajor = async () => {
     }
   });
 
-  return versionsGroupedByMajor;
+  return versionsGroupedByMajor.sort(
+    (a, b) => Number(b.major) - Number(a.major)
+  );
 };
 
 export interface Features {
