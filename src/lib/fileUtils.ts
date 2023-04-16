@@ -36,7 +36,9 @@ export const getDiffPath = ({
   return path.join(
     process.cwd(),
     "diffs",
-    `diff-${currentVersion}-${upgradeVersion}-${featuresString}.patch`
+    `diff-${currentVersion}-${upgradeVersion}${
+      featuresString ? `-${featuresString}` : ""
+    }.patch`
   );
 };
 
@@ -53,10 +55,13 @@ export const getExistingDiffsMap = () => {
 
       const { currentVersion, upgradeVersion, features } = versionsAndFeatures;
 
+      const featuresString = getFeaturesString(features);
+
       return {
         ...acc,
-        [`${currentVersion}..${upgradeVersion}-${getFeaturesString(features)}`]:
-          true,
+        [`${currentVersion}..${upgradeVersion}${
+          featuresString ? `-${featuresString}` : ""
+        }`]: true,
       };
     },
     {}
@@ -94,6 +99,11 @@ export const getMissingDiffs = async (count: number) => {
     for (let j = i + 1; j < sortedT3Versions.length; j++) {
       const upgradeVersion = sortedT3Versions[j] as string;
       const combinations = arrangements(features);
+
+      const noFeaturesDiff = `${currentVersion}..${upgradeVersion}`;
+      if (!existingDiffsMap[noFeaturesDiff]) {
+        newDiffsMap[noFeaturesDiff] = true;
+      }
 
       for (const combination of combinations) {
         const features: Features = {
