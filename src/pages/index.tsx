@@ -98,10 +98,11 @@ const Home: NextPage = () => {
     const activeFeatures = Object.keys(features).filter(
       (feature) => features[feature as keyof typeof features]
     );
+    const featuresString = activeFeatures.join("-");
 
-    const url = `/diff/${currentVersion}..${upgradeVersion}-${activeFeatures.join(
-      "-"
-    )}`;
+    const url = `/diff/${currentVersion}..${upgradeVersion}${
+      featuresString ? `-${featuresString}` : ""
+    }`;
 
     void router.push(url);
   };
