@@ -214,8 +214,8 @@ const UpgradePanel: React.FC<{
 
           <div>
             <p>
-              To check your app's version, use the <code>package.json</code>{" "}
-              file.
+              To check your app&apos;s version, use the{" "}
+              <code>package.json</code> file.
             </p>
 
             <p className="my-3">
@@ -237,7 +237,7 @@ const UpgradePanel: React.FC<{
       <Button
         className="bg-[hsl(280,100%,70%)] hover:bg-[hsl(280,100%,60%)]"
         disabled={!currentVersion || !upgradeVersion || fetchingDiff}
-        onClick={async () => await goToDiff()}
+        onClick={() => void goToDiff()}
       >
         {fetchingDiff ? "Loading..." : "Upgrade"}
       </Button>

@@ -19,14 +19,12 @@ import {
   parseDiff,
   type ViewType,
 } from "react-diff-view";
-
 import { getExistingDiffsMap, type DiffLocation } from "@/lib/fileUtils";
 import generateDiff from "@/lib/generateDiff";
 import { CheckIcon, XIcon } from "lucide-react";
 import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/Button";
-import Link from "next/link";
 
 export const getStaticPaths = () => {
   const existingDiffsMap = getExistingDiffsMap();
