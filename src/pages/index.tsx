@@ -118,7 +118,7 @@ const UpgradePanel: React.FC<{
     if (noUpgradeAvailable) {
       setUpgradeVersion(undefined);
     } else {
-      setUpgradeVersion(upgradeVersionOptions[0]!.versions[0]);
+      setUpgradeVersion(upgradeVersionOptions[0]?.versions[0] ?? undefined);
     }
   }, [noUpgradeAvailable, upgradeVersionOptions]);
 
@@ -146,7 +146,7 @@ const UpgradePanel: React.FC<{
             defaultValue={
               noUpgradeAvailable
                 ? undefined
-                : upgradeVersionOptions[0]!.versions[0]
+                : upgradeVersionOptions[0]?.versions[0]
             }
           >
             <SelectTrigger className="w-[180px] text-white">
