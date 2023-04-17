@@ -9,8 +9,8 @@ import {
   SelectValue,
 } from "@/components/ui/Select";
 import {
-  type Features,
   getT3VersionsGroupedByMajor,
+  type Features,
   type VersionsGroupedByMajor,
 } from "@/lib/utils";
 import { type NextPage } from "next";
@@ -25,8 +25,8 @@ const UpgradePanel: React.FC<{
 }> = ({ loading, versionOptions }) => {
   const router = useRouter();
 
-  const [currentVersion, setCurrentVersion] = useState<string | null>(null);
-  const [upgradeVersion, setUpgradeVersion] = useState<string | null>(null);
+  const [currentVersion, setCurrentVersion] = useState<string>();
+  const [upgradeVersion, setUpgradeVersion] = useState<string>();
   const [features, setFeatures] = useState<Features>({
     nextAuth: false,
     prisma: false,
@@ -113,6 +113,14 @@ const UpgradePanel: React.FC<{
 
     void router.push(url);
   };
+
+  useEffect(() => {
+    if (noUpgradeAvailable) {
+      setUpgradeVersion(undefined);
+    } else {
+      setUpgradeVersion(upgradeVersionOptions[0]!.versions[0]);
+    }
+  }, [noUpgradeAvailable, upgradeVersionOptions]);
 
   if (loading) return <span className="text-white">Loding versions...</span>;
 
