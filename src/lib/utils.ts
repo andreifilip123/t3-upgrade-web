@@ -1,13 +1,13 @@
 import clsx, { type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
-import { z } from "zod";
 import {
-  tokenize as tokennizeReactDiffView,
   markEdits,
-  HunkData,
+  tokenize as tokennizeReactDiffView,
+  type HunkData,
 } from "react-diff-view";
 import refractor from "refractor";
 import ts from "refractor/lang/typescript";
+import { twMerge } from "tailwind-merge";
+import { z } from "zod";
 
 export const tokenize = (hunks: HunkData[]) => {
   if (!hunks) {

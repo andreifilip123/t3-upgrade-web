@@ -3,7 +3,7 @@ import {
   getFeatureUrl,
   tokenize,
 } from "@/lib/utils";
-import type { File as FileData, Hunk as HunkData } from "gitdiff-parser";
+import type { File as FileData } from "gitdiff-parser";
 import { type GetStaticProps, type NextPage } from "next";
 import {
   Decoration,
