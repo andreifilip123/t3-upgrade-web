@@ -11,7 +11,6 @@ import {
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -26,6 +25,7 @@ import Head from "next/head";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
+import { Button } from "@/components/ui/Button";
 
 const UpgradePanel: React.FC<{
   loading: boolean;
@@ -33,6 +33,7 @@ const UpgradePanel: React.FC<{
 }> = ({ loading, versionOptions }) => {
   const router = useRouter();
 
+  const [fetchingDiff, setFetchingDiff] = useState(false);
   const [currentVersion, setCurrentVersion] = useState<string>();
   const [upgradeVersion, setUpgradeVersion] = useState<string>();
   const [features, setFeatures] = useState<Features>({
@@ -108,7 +109,7 @@ const UpgradePanel: React.FC<{
 
   const noUpgradeAvailable = upgradeVersionOptions.length === 0;
 
-  const goToDiff = () => {
+  const goToDiff = async () => {
     if (!currentVersion || !upgradeVersion) return;
     const activeFeatures = Object.keys(features).filter(
       (feature) => features[feature as keyof typeof features]
@@ -119,7 +120,9 @@ const UpgradePanel: React.FC<{
       featuresString ? `-${featuresString}` : ""
     }`;
 
-    void router.push(url);
+    setFetchingDiff(true);
+    await router.push(url);
+    setFetchingDiff(false);
   };
 
   useEffect(() => {
@@ -215,7 +218,7 @@ const UpgradePanel: React.FC<{
               file.
             </p>
 
-            <p className="my-4">
+            <p className="my-3">
               <p>Look for a section like this:</p>
 
               <p>
@@ -231,13 +234,13 @@ const UpgradePanel: React.FC<{
         </DialogContent>
       </Dialog>
 
-      <button
-        className="rounded-md bg-[hsl(280,100%,70%)] px-4 py-2 text-lg font-medium text-white disabled:cursor-not-allowed disabled:opacity-70"
-        disabled={!currentVersion || !upgradeVersion}
-        onClick={() => goToDiff()}
+      <Button
+        className="bg-[hsl(280,100%,70%)] hover:bg-[hsl(280,100%,60%)]"
+        disabled={!currentVersion || !upgradeVersion || fetchingDiff}
+        onClick={async () => await goToDiff()}
       >
-        Upgrade
-      </button>
+        {fetchingDiff ? "Loading..." : "Upgrade"}
+      </Button>
     </>
   );
 };
