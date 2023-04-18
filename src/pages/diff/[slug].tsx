@@ -203,7 +203,7 @@ const DiffPage: NextPage<{
         <Button onClick={() => downloadDiffFile()}>Download .patch file</Button>
 
         <Dialog>
-          <DialogTrigger>
+          <DialogTrigger asChild>
             <Button variant={"link"}>How to apply the patch?</Button>
           </DialogTrigger>
           <DialogContent className="bg-white">
