@@ -2,7 +2,7 @@ import { env } from "@/env.mjs";
 import { getMissingDiffs } from "@/lib/fileUtils";
 import generateDiff from "@/lib/generateDiff";
 import { extractVersionsAndFeatures } from "@/lib/utils";
-import { NextApiHandler } from "next";
+import { type NextApiHandler } from "next";
 import crypto from "node:crypto";
 import { z } from "zod";
 
@@ -60,7 +60,7 @@ const handler: NextApiHandler = async (req, res) => {
   const responses = await Promise.all(promises);
 
   console.log(
-    `Handles diffs: ${responses.filter((response) => !response.error).length}`
+    `Handled diffs: ${responses.filter((response) => !response.error).length}`
   );
 };
 
