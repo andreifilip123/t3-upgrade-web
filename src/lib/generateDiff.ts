@@ -34,6 +34,9 @@ export default async function generateDiff(params: Params) {
   const diffDir = `/tmp/${currentVersion}..${upgradeVersion}${
     featuresString ? `-${featuresString}` : ""
   }`;
+  const url = `/diff/${currentVersion}..${upgradeVersion}${
+    featuresString ? `-${featuresString}` : ""
+  }`;
 
   const currentProjectPath = path.join(diffDir, "current");
   const upgradeProjectPath = path.join(diffDir, "upgrade");
@@ -48,7 +51,7 @@ export default async function generateDiff(params: Params) {
   if (fs.existsSync(diffPath)) {
     const differences = fs.readFileSync(diffPath, "utf8");
 
-    return { differences };
+    return { differences, url };
   }
 
   try {
@@ -83,7 +86,7 @@ export default async function generateDiff(params: Params) {
     await executeCommand(`rm -rf ${diffDir}`);
 
     // Send the diff back to the client
-    return { differences };
+    return { differences, url };
   } catch (error) {
     return { error };
   }

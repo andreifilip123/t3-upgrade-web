@@ -51,13 +51,24 @@ const handler: NextApiHandler = async (req, res) => {
     const versionsAndFeatures = extractVersionsAndFeatures(diffLocation);
 
     if (!versionsAndFeatures) {
-      return { error: "Invalid diff location", differences: undefined };
+      return {
+        error: "Invalid diff location",
+        differences: undefined,
+        url: undefined,
+      };
     }
 
     return generateDiff(versionsAndFeatures);
   });
 
   const responses = await Promise.all(promises);
+  const successfulDiffs = responses.filter(
+    (response) => !response.error && !!response.differences && !!response.url
+  );
+
+  successfulDiffs.forEach((diff) => {
+    res.revalidate(diff.url || "");
+  });
 
   console.log(
     `Handled diffs: ${responses.filter((response) => !response.error).length}`
