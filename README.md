@@ -8,4 +8,4 @@ Using the signature that Github sends in the header, you can test the webhook:
 WEBHOOK_SIGNATURE=XXX npm run webhook:dev
 ```
 
-This command will open [WebhookThing](https://webhookthing.com/) server from which you'll be albe to run your webhook.
+This command will open [WebhookThing](https://webhookthing.com/) server from which you'll be able to run your webhook.
