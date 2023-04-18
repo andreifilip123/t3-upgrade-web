@@ -3,6 +3,13 @@ import {
   getFeatureUrl,
   tokenize,
 } from "@/lib/utils";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/Dialog";
 import type { File as FileData } from "gitdiff-parser";
 import { type GetStaticProps, type NextPage } from "next";
 import {
@@ -12,12 +19,12 @@ import {
   parseDiff,
   type ViewType,
 } from "react-diff-view";
-
 import { getExistingDiffsMap, type DiffLocation } from "@/lib/fileUtils";
 import generateDiff from "@/lib/generateDiff";
 import { CheckIcon, XIcon } from "lucide-react";
 import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
+import { Button } from "@/components/ui/Button";
 
 export const getStaticPaths = () => {
   const existingDiffsMap = getExistingDiffsMap();
@@ -175,12 +182,53 @@ const DiffPage: NextPage<{
     );
   };
 
+  const downloadDiffFile = () => {
+    const element = document.createElement("a");
+    const file = new Blob([diffText], { type: "text/plain" });
+
+    element.href = URL.createObjectURL(file);
+    element.download = "t3-upgrade.patch";
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+  };
+
   return (
     <main className="min-h-screen bg-gray-200 py-4">
       <h1 className="mb-4 text-center text-4xl font-extrabold tracking-tight sm:text-5xl">
         Changes from {versionsAndFeatures?.currentVersion} to{" "}
         {versionsAndFeatures?.upgradeVersion}
       </h1>
+      <div className="my-4 flex w-full flex-col items-center justify-center gap-4">
+        <Button onClick={() => downloadDiffFile()}>Download .patch file</Button>
+
+        <Dialog>
+          <DialogTrigger>
+            <Button variant={"link"}>How to apply the patch?</Button>
+          </DialogTrigger>
+          <DialogContent className="bg-white">
+            <DialogHeader>
+              <DialogTitle className="text-2xl">
+                Applying the upgrade patch
+              </DialogTitle>
+            </DialogHeader>
+
+            <div>
+              <p>
+                To apply the patch, you can use the following command:
+                <p>
+                  <code>git apply ./t3-upgrade.patch</code>
+                </p>
+              </p>
+
+              <p className="mt-3">
+                Remeber to place your patch file in the project directory, or
+                use the correct file path.
+              </p>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
       <ul className="mx-2 my-3 grid grid-cols-1 justify-center gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
         {Object.entries(versionsAndFeatures.features).map(
           ([feature, enabled]) => (

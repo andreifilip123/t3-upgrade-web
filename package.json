@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@radix-ui/react-checkbox": "^1.0.3",
+    "@radix-ui/react-dialog": "^1.0.3",
     "@radix-ui/react-select": "^1.2.1",
     "class-variance-authority": "^0.5.1",
     "clsx": "^1.2.1",
