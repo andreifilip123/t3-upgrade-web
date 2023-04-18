@@ -18,6 +18,7 @@ const handler: NextApiHandler = async (req, res) => {
       .update(JSON.stringify(req.body))
       .digest("hex");
 
+  // Authenticate webhook
   if (req.headers["x-hub-signature-256"] !== signature) {
     return res.status(401).json({ success: false });
   }
@@ -38,6 +39,10 @@ const handler: NextApiHandler = async (req, res) => {
     return res.status(200).json({ success: true });
   }
 
+  res.status(200).json({
+    success: true,
+  });
+
   const missingDiffs = await getMissingDiffs(Infinity);
 
   const promises = missingDiffs.map((diffLocation) => {
@@ -50,9 +55,11 @@ const handler: NextApiHandler = async (req, res) => {
     return generateDiff(versionsAndFeatures);
   });
 
-  await Promise.all(promises);
+  const responses = await Promise.all(promises);
 
-  return res.status(200).json({ success: true });
+  console.log(
+    `Handles diffs: ${responses.filter((response) => !response.error).length}`
+  );
 };
 
 export default handler;
