@@ -43,6 +43,8 @@ const handler: NextApiHandler = async (req, res) => {
     success: true,
   });
 
+  console.log(`Detected new release: ${event.data.release.name}`);
+
   const missingDiffs = await getMissingDiffs(Infinity);
 
   const promises = missingDiffs.map((diffLocation) => {
