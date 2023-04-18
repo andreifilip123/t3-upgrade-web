@@ -7,7 +7,7 @@
     "dev": "next dev",
     "lint": "next lint",
     "start": "next start",
-    "webhook:dev": "WEBHOOK_SIGNATURE=XXX npx webhookthing@latest"
+    "webhook:dev": "npx webhookthing@latest"
   },
   "dependencies": {
     "@radix-ui/react-checkbox": "^1.0.3",
