@@ -69,7 +69,7 @@ const handler: NextApiHandler = async (req, res) => {
   successfulDiffs.forEach((diff) => {
     console.log(`Generating page ${diff.url ?? "/"}...`);
 
-    res.revalidate(diff.url || "").then(() => {
+    void res.revalidate(diff.url || "").then(() => {
       console.log(`->    Generated ${diff.url ?? "/"}!`);
     });
   });
