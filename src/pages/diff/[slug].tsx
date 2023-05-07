@@ -1,8 +1,4 @@
-import {
-  extractVersionsAndFeatures,
-  getFeatureUrl,
-  tokenize,
-} from "@/lib/utils";
+import { Button } from "@/components/ui/Button";
 import {
   Dialog,
   DialogContent,
@@ -10,8 +6,18 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/Dialog";
+import { getExistingDiffsMap, type DiffLocation } from "@/lib/fileUtils";
+import generateDiff from "@/lib/generateDiff";
+import {
+  extractVersionsAndFeatures,
+  getFeatureUrl,
+  tokenize,
+} from "@/lib/utils";
 import type { File as FileData } from "gitdiff-parser";
+import { CheckIcon, XIcon } from "lucide-react";
 import { type GetStaticProps, type NextPage } from "next";
+import { useRouter } from "next/router";
+import { useMemo, useState } from "react";
 import {
   Decoration,
   Diff,
@@ -19,12 +25,6 @@ import {
   parseDiff,
   type ViewType,
 } from "react-diff-view";
-import { getExistingDiffsMap, type DiffLocation } from "@/lib/fileUtils";
-import generateDiff from "@/lib/generateDiff";
-import { CheckIcon, XIcon } from "lucide-react";
-import { useRouter } from "next/router";
-import { useMemo, useState } from "react";
-import { Button } from "@/components/ui/Button";
 
 export const getStaticPaths = () => {
   const existingDiffsMap = getExistingDiffsMap();
@@ -35,7 +35,7 @@ export const getStaticPaths = () => {
         slug,
       },
     })),
-    fallback: true,
+    fallback: "blocking",
   };
 };
 
