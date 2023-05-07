@@ -42,10 +42,8 @@ export default async function generateDiff(params: Params) {
   await executeCommand(`rm -rf ${currentProjectPath}`);
   await executeCommand(`rm -rf ${upgradeProjectPath}`);
 
-  await executeCommand(`npm config set cache /tmp/ --global`);
-
   const getCommand = (version: string, path: string) =>
-    `npx create-t3-app@${version} ${path} --CI ${featureFlags} --noGit --noInstall`;
+    `npm_config_cache=/tmp/ npx create-t3-app@${version} ${path} --CI ${featureFlags} --noGit --noInstall`;
 
   if (fs.existsSync(diffPath)) {
     const differences = fs.readFileSync(diffPath, "utf8");
