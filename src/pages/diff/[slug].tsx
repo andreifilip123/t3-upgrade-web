@@ -56,6 +56,7 @@ export const getStaticProps: GetStaticProps<Props, Params> = async (
     console.warn("No slug provided");
     return {
       notFound: true,
+      reason: "No slug provided",
     };
   }
 
@@ -65,6 +66,7 @@ export const getStaticProps: GetStaticProps<Props, Params> = async (
     console.warn("No versions and features provided");
     return {
       notFound: true,
+      reason: "No versions and features provided",
     };
   }
 
@@ -82,6 +84,7 @@ export const getStaticProps: GetStaticProps<Props, Params> = async (
     console.warn("Error generating diff", error, differences);
     return {
       notFound: true,
+      reason: "Error generating diff: " + JSON.stringify(error),
     };
   }
 
