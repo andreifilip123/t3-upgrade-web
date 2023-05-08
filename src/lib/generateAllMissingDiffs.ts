@@ -25,7 +25,11 @@ const generateAllMissingDiffs = async () => {
     });
 
     const timeStart = performance.now();
-    await Promise.all(promises);
+    try {
+      await Promise.all(promises);
+    } catch (error) {
+      console.error(error);
+    }
     const timeEnd = performance.now();
     console.count("Generated batch");
     console.log(`Batch took ${timeEnd - timeStart}ms`);
