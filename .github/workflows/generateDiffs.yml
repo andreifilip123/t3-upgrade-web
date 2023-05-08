@@ -20,6 +20,9 @@ jobs:
           node-version: 18.x
           cache: 'pnpm'
 
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
       - name: Run generate-all-missing-diffs script
         run: pnpm run generate-all-missing-diffs
 
