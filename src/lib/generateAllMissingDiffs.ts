@@ -24,9 +24,20 @@ const generateAllMissingDiffs = async () => {
       return generateDiff(versionsAndFeatures);
     });
 
+    const timeStart = performance.now();
     await Promise.all(promises);
+    const timeEnd = performance.now();
     console.count("Generated batch");
+    console.log(`Batch took ${timeEnd - timeStart}ms`);
   }
 };
 
-export default generateAllMissingDiffs;
+generateAllMissingDiffs()
+  .then(() => {
+    console.log("Done!");
+    process.exit(0);
+  })
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });

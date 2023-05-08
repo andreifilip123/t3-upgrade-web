@@ -1,4 +1,5 @@
 import clsx, { type ClassValue } from "clsx";
+import fetch from "node-fetch";
 import {
   markEdits,
   tokenize as tokennizeReactDiffView,
