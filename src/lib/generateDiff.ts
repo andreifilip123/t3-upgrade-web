@@ -46,10 +46,13 @@ export default async function generateDiff(params: Params) {
     `npm_config_cache=/tmp/ npx create-t3-app@${version} ${path} --CI ${featureFlags} --noGit --noInstall`;
 
   if (fs.existsSync(diffPath)) {
+    console.log("Diff already exists, reading from disk", diffPath);
     const differences = fs.readFileSync(diffPath, "utf8");
 
     return { differences };
   }
+
+  console.log("Diff does not exist, generating", diffPath);
 
   try {
     await executeCommand(getCommand(currentVersion, currentProjectPath));
