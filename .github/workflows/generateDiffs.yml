@@ -27,14 +27,20 @@ jobs:
         run: pnpm run generate-all-missing-diffs
 
       - name: Commit and push changes
-        uses: EndBug/add-and-commit@v7
+        uses: EndBug/add-and-commit@v9
         with:
           author_name: Generate remaining diffs
           author_email:
+          add: 'diffs/*'
+          message: 'Generate remaining diffs'
+          push: true
 
       - name: Commit and push changes if cancelled
         if: ${{ cancelled() }}
-        uses: EndBug/add-and-commit@v7
+        uses: EndBug/add-and-commit@v9
         with:
           author_name: Generate remaining diffs
           author_email:
+          add: 'diffs/*'
+          message: 'Generate remaining diffs'
+          push: true
