@@ -1,0 +1,37 @@
+name: Generate remaining diffs
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  generate-diffs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+          cache: 'pnpm'
+
+      - name: Run generate-all-missing-diffs script
+        run: pnpm run generate-all-missing-diffs
+
+      - name: Commit and push changes
+        uses: EndBug/add-and-commit@v7
+        with:
+          author_name: Generate remaining diffs
+          author_email:
+
+      - name: Commit and push changes if cancelled
+        if: ${{ cancelled() }}
+        uses: EndBug/add-and-commit@v7
+        with:
+          author_name: Generate remaining diffs
+          author_email:
