@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - uses: pnpm/action-setup@v2
         with:
@@ -27,7 +27,11 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Run generate-all-missing-diffs script
-        run: pnpm run generate-all-missing-diffs
+        run: pnpm generate-all-missing-diffs
+      
+      - name: See if there are any diffs
+        run: |
+          git status --porcelain
 
       - name: Pull latest commits
         run: git pull
