@@ -26,21 +26,18 @@ jobs:
       - name: Run generate-all-missing-diffs script
         run: pnpm run generate-all-missing-diffs
 
-      - name: Commit and push changes
-        uses: EndBug/add-and-commit@v9
-        with:
-          author_name: Generate remaining diffs
-          author_email:
-          add: 'diffs/*'
-          message: 'Generate remaining diffs'
-          push: true
+      - name: Pull latest commits
+        run: git pull
 
-      - name: Commit and push changes if cancelled
-        if: ${{ cancelled() }}
-        uses: EndBug/add-and-commit@v9
+      - name: Commit assets
+        uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          author_name: Generate remaining diffs
-          author_email:
-          add: 'diffs/*'
-          message: 'Generate remaining diffs'
-          push: true
+          commit_message: Generate remaining diffs
+          file_pattern: diffs/*
+
+      - name: Commit assets if cancelled
+        if: ${{ cancelled() }}
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Generate remaining diffs
+          file_pattern: diffs/*
