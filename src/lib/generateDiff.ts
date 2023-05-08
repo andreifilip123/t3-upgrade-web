@@ -67,10 +67,14 @@ export default async function generateDiff(params: Params) {
       cd ../
     `);
 
+    console.log("Created git repo for current project");
+
     // Move the upgrade project over the current project
     await executeCommand(
       `rsync -a --delete --exclude=.git/ ${upgradeProjectPath}/ ${currentProjectPath}/`
     );
+
+    console.log("Moved upgrade project over current project");
 
     // Generate the diff
     await executeCommand(`
