@@ -16,6 +16,7 @@ export interface DiffLocation {
 }
 
 export const executeCommand = (command: string) => {
+  console.log("Executing command", command);
   return new Promise((resolve, reject) => {
     exec(command, (error, stdout) => {
       if (error) {
