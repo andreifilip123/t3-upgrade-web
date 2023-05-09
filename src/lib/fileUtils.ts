@@ -19,16 +19,15 @@ export const executeCommand = (command: string, options?: { cwd: string }) => {
   if (options?.cwd) {
     exec(`cd ${options.cwd}`);
   }
-  console.log("Executing command", command);
   return new Promise((resolve, reject) => {
     exec(command, (error, stdout) => {
       if (error) {
-        console.log("Error executing command", error);
+        console.error(error);
         reject(error);
         return;
       }
       resolve(stdout);
-      console.log("Command executed successfully", stdout);
+      console.log(stdout);
     });
   });
 };

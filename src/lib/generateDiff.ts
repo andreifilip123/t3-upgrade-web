@@ -43,44 +43,39 @@ export default async function generateDiff(params: Params) {
   await executeCommand(`rm -rf ${upgradeProjectPath}`);
 
   const getCommand = (version: string, path: string) =>
-    `pnpm create t3-app@${version} ${path} --CI ${featureFlags} --noGit --noInstall`;
+    `pnpm create t3-app@${version} ${path} --CI ${featureFlags} --noInstall`;
 
   if (fs.existsSync(diffPath)) {
-    console.log("Diff already exists, reading from disk", diffPath);
     const differences = fs.readFileSync(diffPath, "utf8");
 
     return { differences };
   }
 
-  console.log("Diff does not exist, generating", diffPath);
-
   try {
     await executeCommand(getCommand(currentVersion, currentProjectPath));
     await executeCommand(getCommand(upgradeVersion, upgradeProjectPath));
 
-    console.log("Created current and upgrade projects");
-
     // Git init the current project
-    await executeCommand(`git init`, { cwd: currentProjectPath });
-    await executeCommand(`git add .`, { cwd: currentProjectPath });
-    await executeCommand(`git commit -m "Initial commit"`, {
-      cwd: currentProjectPath,
-    });
-
-    console.log("Created git repo for current project");
+    await executeCommand(`
+      cd ${currentProjectPath} &&
+      git init &&
+      git add . &&
+      git commit -m "Initial commit" &&
+      cd ../
+    `);
 
     // Move the upgrade project over the current project
     await executeCommand(
       `rsync -a --delete --exclude=.git/ ${upgradeProjectPath}/ ${currentProjectPath}/`
     );
 
-    console.log("Moved upgrade project over current project");
-
     // Generate the diff
-    await executeCommand(`git add .`, { cwd: currentProjectPath });
-    await executeCommand(`git diff --staged > ${diffPath}`, {
-      cwd: currentProjectPath,
-    });
+    await executeCommand(`
+      cd ${currentProjectPath} &&
+      git add . &&
+      git diff --staged > ${diffPath} &&
+      cd ../
+    `);
 
     // Read the diff
     const differences = fs.readFileSync(diffPath, "utf8");
