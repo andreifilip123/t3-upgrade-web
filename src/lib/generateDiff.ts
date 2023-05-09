@@ -43,7 +43,7 @@ export default async function generateDiff(params: Params) {
   await executeCommand(`rm -rf ${upgradeProjectPath}`);
 
   const getCommand = (version: string, path: string) =>
-    `npm_config_cache=/tmp/ npx create-t3-app@${version} ${path} --CI ${featureFlags} --noGit --noInstall`;
+    `npx create-t3-app@${version} ${path} --CI ${featureFlags} --noGit --noInstall`;
 
   if (fs.existsSync(diffPath)) {
     console.log("Diff already exists, reading from disk", diffPath);
@@ -57,6 +57,8 @@ export default async function generateDiff(params: Params) {
   try {
     await executeCommand(getCommand(currentVersion, currentProjectPath));
     await executeCommand(getCommand(upgradeVersion, upgradeProjectPath));
+
+    console.log("Created current and upgrade projects");
 
     // Git init the current project
     await executeCommand(`cd ${currentProjectPath}`);
