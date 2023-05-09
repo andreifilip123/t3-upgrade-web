@@ -59,13 +59,11 @@ export default async function generateDiff(params: Params) {
     await executeCommand(getCommand(upgradeVersion, upgradeProjectPath));
 
     // Git init the current project
-    await executeCommand(`
-      cd ${currentProjectPath} &&
-      git init &&
-      git add . &&
-      git commit -m "Initial commit" &&
-      cd ../
-    `);
+    await executeCommand(`cd ${currentProjectPath}`);
+    await executeCommand(`git init`);
+    await executeCommand(`git add .`);
+    await executeCommand(`git commit -m "Initial commit"`);
+    await executeCommand(`cd ../`);
 
     console.log("Created git repo for current project");
 
@@ -77,12 +75,10 @@ export default async function generateDiff(params: Params) {
     console.log("Moved upgrade project over current project");
 
     // Generate the diff
-    await executeCommand(`
-      cd ${currentProjectPath} &&
-      git add . &&
-      git diff --staged > ${diffPath} &&
-      cd ../
-    `);
+    await executeCommand(`cd ${currentProjectPath}`);
+    await executeCommand(`git add .`);
+    await executeCommand(`git diff --staged > ${diffPath}`);
+    await executeCommand(`cd ../`);
 
     // Read the diff
     const differences = fs.readFileSync(diffPath, "utf8");
