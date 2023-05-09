@@ -36,15 +36,11 @@ jobs:
       - name: Pull latest commits
         run: git pull
 
-      - name: Commit assets
-        uses: stefanzweifel/git-auto-commit-action@v4
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
         with:
-          commit_message: Generate remaining diffs
-          file_pattern: diffs/*
-
-      - name: Commit assets if cancelled
-        if: ${{ cancelled() }}
-        uses: stefanzweifel/git-auto-commit-action@v4
-        with:
-          commit_message: Generate remaining diffs
-          file_pattern: diffs/*
+          commit-message: Generate new diffs
+          branch: new-diffs
+          delete-branch: true
+          title: 'Generate new diffs'
+          reviewers: andreifilip123
