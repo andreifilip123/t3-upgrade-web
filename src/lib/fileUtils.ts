@@ -15,7 +15,10 @@ export interface DiffLocation {
   features: Features;
 }
 
-export const executeCommand = (command: string) => {
+export const executeCommand = (command: string, options?: { cwd: string }) => {
+  if (options?.cwd) {
+    exec(`cd ${options.cwd}`);
+  }
   console.log("Executing command", command);
   return new Promise((resolve, reject) => {
     exec(command, (error, stdout) => {
