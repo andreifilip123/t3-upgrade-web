@@ -20,10 +20,12 @@ export const executeCommand = (command: string) => {
   return new Promise((resolve, reject) => {
     exec(command, (error, stdout) => {
       if (error) {
+        console.log("Error executing command", error);
         reject(error);
         return;
       }
       resolve(stdout);
+      console.log("Command executed successfully", stdout);
     });
   });
 };
