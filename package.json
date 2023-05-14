@@ -8,7 +8,7 @@
     "lint": "next lint",
     "start": "next start",
     "webhook:dev": "npx webhookthing@latest",
-    "generate-all-missing-diffs": "tsx src/lib/generateAllMissingDiffs.ts"
+    "generate-all-missing-diffs": "tsx src/lib/runGenerateAllScript.ts"
   },
   "dependencies": {
     "@radix-ui/react-checkbox": "^1.0.3",
