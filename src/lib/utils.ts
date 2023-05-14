@@ -1,5 +1,4 @@
 import clsx, { type ClassValue } from "clsx";
-import fetch from "node-fetch";
 import { twMerge } from "tailwind-merge";
 import { z } from "zod";
 
