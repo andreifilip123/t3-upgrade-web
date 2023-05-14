@@ -19,7 +19,8 @@
     "eslint-plugin-tailwindcss": "^3.11.0",
     "gitdiff-parser": "^0.3.1",
     "lucide-react": "^0.134.0",
-    "next": "^13.2.4",
+    "@t3-oss/env-nextjs": "^0.2.1",
+    "next": "^13.4.1",
     "node-fetch": "^2.6.9",
     "react": "18.2.0",
     "react-diff-view": "^3.0.3",
@@ -41,7 +42,7 @@
     "@typescript-eslint/parser": "^5.56.0",
     "autoprefixer": "^10.4.14",
     "eslint": "^8.36.0",
-    "eslint-config-next": "^13.2.4",
+    "eslint-config-next": "^13.4.1",
     "postcss": "^8.4.21",
     "prettier": "^2.8.6",
     "prettier-plugin-tailwindcss": "^0.2.6",
@@ -50,6 +51,6 @@
     "typescript": "^5.0.2"
   },
   "ct3aMetadata": {
-    "initVersion": "7.11.0"
+    "initVersion": "7.13.0"
   }
 }
