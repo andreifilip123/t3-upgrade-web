@@ -35,13 +35,3 @@ export const generateAllMissingDiffs = async () => {
     console.log(`Batch took ${timeEnd - timeStart}ms`);
   }
 };
-
-generateAllMissingDiffs()
-  .then(() => {
-    console.log("Done!");
-    process.exit(0);
-  })
-  .catch((error) => {
-    console.error(error);
-    process.exit(1);
-  });
