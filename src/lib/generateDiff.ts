@@ -45,8 +45,14 @@ export default async function generateDiff(params: Params) {
   await executeCommand(`rm -rf ${currentProjectPath}`);
   await executeCommand(`rm -rf ${upgradeProjectPath}`);
 
+  // Configure git author
+  await executeCommand(`
+    git config --global user.email "t3-bot@example.com"
+    git config --global user.name "T3 Bot"
+  `);
+
   const getCommand = (version: string, path: string) =>
-    `npx create-t3-app@${version} ${path} --CI ${featureFlags} --noGit --noInstall`;
+    `pnpm create t3-app@${version} ${path} --CI ${featureFlags} --noInstall`;
 
   if (fs.existsSync(diffPath)) {
     const differences = fs.readFileSync(diffPath, "utf8");

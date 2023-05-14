@@ -1,8 +1,4 @@
-import {
-  extractVersionsAndFeatures,
-  getFeatureUrl,
-  tokenize,
-} from "@/lib/utils";
+import { Button } from "@/components/ui/Button";
 import {
   Dialog,
   DialogContent,
@@ -10,8 +6,18 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/Dialog";
+import { getDiffPath, type DiffLocation } from "@/lib/fileUtils";
+import {
+  extractVersionsAndFeatures,
+  getFeatureUrl,
+  tokenize,
+} from "@/lib/utils";
+import { promises as fs } from "fs";
 import type { File as FileData } from "gitdiff-parser";
-import { type GetStaticProps, type NextPage } from "next";
+import { CheckIcon, XIcon } from "lucide-react";
+import { type GetServerSideProps, type NextPage } from "next";
+import { useRouter } from "next/router";
+import { useMemo, useState } from "react";
 import {
   Decoration,
   Diff,
@@ -19,25 +25,6 @@ import {
   parseDiff,
   type ViewType,
 } from "react-diff-view";
-import { getExistingDiffsMap, type DiffLocation } from "@/lib/fileUtils";
-import generateDiff from "@/lib/generateDiff";
-import { CheckIcon, XIcon } from "lucide-react";
-import { useRouter } from "next/router";
-import { useMemo, useState } from "react";
-import { Button } from "@/components/ui/Button";
-
-export const getStaticPaths = () => {
-  const existingDiffsMap = getExistingDiffsMap();
-
-  return {
-    paths: Object.keys(existingDiffsMap).map((slug) => ({
-      params: {
-        slug,
-      },
-    })),
-    fallback: true,
-  };
-};
 
 type Props = {
   diffText: string;
@@ -47,7 +34,7 @@ type Params = {
   slug: string;
 };
 
-export const getStaticProps: GetStaticProps<Props, Params> = async (
+export const getServerSideProps: GetServerSideProps<Props, Params> = async (
   context
 ) => {
   const { params } = context;
@@ -56,6 +43,7 @@ export const getStaticProps: GetStaticProps<Props, Params> = async (
     console.warn("No slug provided");
     return {
       notFound: true,
+      reason: "No slug provided",
     };
   }
 
@@ -65,30 +53,31 @@ export const getStaticProps: GetStaticProps<Props, Params> = async (
     console.warn("No versions and features provided");
     return {
       notFound: true,
+      reason: "No versions and features provided",
     };
   }
 
-  const { currentVersion, upgradeVersion, features } = versionsAndFeatures;
+  const diffPath = getDiffPath(versionsAndFeatures);
+  const fileExists = await fs
+    .access(diffPath, fs.constants.F_OK)
+    .then(() => true)
+    .catch(() => false);
 
-  const response = await generateDiff({
-    currentVersion,
-    upgradeVersion,
-    features,
-  });
+  if (fileExists) {
+    const differences = await fs.readFile(diffPath, "utf8");
 
-  const { differences, error } = response;
-
-  if (error || !differences) {
-    console.warn("Error generating diff", error, differences);
     return {
-      notFound: true,
+      props: {
+        diffText: differences,
+        versionsAndFeatures,
+      },
     };
   }
 
   return {
+    notFound: true,
     props: {
-      diffText: differences,
-      versionsAndFeatures,
+      reason: "No diff found",
     },
   };
 };

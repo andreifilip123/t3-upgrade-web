@@ -15,14 +15,19 @@ export interface DiffLocation {
   features: Features;
 }
 
-export const executeCommand = (command: string) => {
+export const executeCommand = (command: string, options?: { cwd: string }) => {
+  if (options?.cwd) {
+    exec(`cd ${options.cwd}`);
+  }
   return new Promise((resolve, reject) => {
     exec(command, (error, stdout) => {
       if (error) {
+        console.error(error);
         reject(error);
         return;
       }
       resolve(stdout);
+      console.log(stdout);
     });
   });
 };
