@@ -1,4 +1,4 @@
-"use-client";
+"use client";
 
 import { Button } from "@/components/ui/Button";
 import {
@@ -11,16 +11,17 @@ import {
 import { type DiffLocation } from "@/lib/fileUtils";
 import { getFeatureUrl } from "@/lib/utils";
 import { CheckIcon, XIcon } from "lucide-react";
-import { useRouter } from "next/router";
-import { useState, type FC } from "react";
+import { useState } from "react";
 import { parseDiff, type ViewType } from "react-diff-view";
 import FileComponent from "./file-component";
 
-const DiffPage: FC<{
+const DiffPage = ({
+  diffText,
+  versionsAndFeatures,
+}: {
   diffText: string;
   versionsAndFeatures: DiffLocation;
-}> = ({ diffText, versionsAndFeatures }) => {
-  const router = useRouter();
+}) => {
   const [viewType, setViewType] = useState<ViewType>("split");
 
   const files = parseDiff(diffText ?? "");
@@ -28,10 +29,6 @@ const DiffPage: FC<{
   const [expandedDiffs, setExpandedDiffs] = useState<boolean[]>(
     Array.from({ length: files.length }, () => true)
   );
-
-  if (router.isFallback) {
-    return <div>Loading...</div>;
-  }
 
   const downloadDiffFile = () => {
     const element = document.createElement("a");

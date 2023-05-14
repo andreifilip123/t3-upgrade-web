@@ -1,12 +1,10 @@
 import { getDiffPath } from "@/lib/fileUtils";
 import { extractVersionsAndFeatures } from "@/lib/utils";
 import { promises as fs } from "fs";
-import { notFound, useParams } from "next/navigation";
+import { notFound } from "next/navigation";
 import DiffPage from "./diff-page";
 
-export default async function Page() {
-  const params = useParams();
-
+export default async function Page({ params }: { params: { slug: string } }) {
   if (!params?.slug) {
     console.warn("No slug provided");
     notFound();
