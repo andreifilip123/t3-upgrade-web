@@ -1,7 +1,5 @@
 import { env } from "@/env.mjs";
-import { getMissingDiffs } from "@/lib/fileUtils";
-import generateDiff from "@/lib/generateDiff";
-import { extractVersionsAndFeatures } from "@/lib/utils";
+import { generateAllMissingDiffs } from "@/lib/generateAllMissingDiffs";
 import { type NextApiHandler } from "next";
 import crypto from "node:crypto";
 import { z } from "zod";
@@ -43,40 +41,16 @@ const handler: NextApiHandler = async (req, res) => {
     success: true,
   });
 
-  console.log(`Detected new release: ${event.data.release.name}`);
-
-  const missingDiffs = await getMissingDiffs(Infinity);
-
-  const promises = missingDiffs.map((diffLocation) => {
-    const versionsAndFeatures = extractVersionsAndFeatures(diffLocation);
-
-    if (!versionsAndFeatures) {
-      return {
-        error: "Invalid diff location",
-        differences: undefined,
-        url: undefined,
-      };
-    }
-
-    return generateDiff(versionsAndFeatures);
-  });
-
-  const responses = await Promise.all(promises);
-  const successfulDiffs = responses.filter(
-    (response) => !response.error && !!response.differences && !!response.url
-  );
-
-  successfulDiffs.forEach((diff) => {
-    console.log(`Generating page ${diff.url ?? "/"}...`);
-
-    void res.revalidate(diff.url || "").then(() => {
-      console.log(`->    Generated ${diff.url ?? "/"}!`);
-    });
-  });
-
   console.log(
-    `Handled diffs: ${responses.filter((response) => !response.error).length}`
+    `Detected new release: ${event.data.release.name}. Generating diffs...`
   );
+
+  try {
+    await generateAllMissingDiffs()
+    console.log("Done!");
+  } catch (error) {
+    console.error(error);
+  }
 };
 
 export default handler;

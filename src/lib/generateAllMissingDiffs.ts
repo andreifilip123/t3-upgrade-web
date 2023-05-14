@@ -2,7 +2,7 @@ import { getMissingDiffs } from "./fileUtils";
 import generateDiff from "./generateDiff";
 import { extractVersionsAndFeatures } from "./utils";
 
-const generateAllMissingDiffs = async () => {
+export const generateAllMissingDiffs = async () => {
   console.log("Generating all missing diffs");
   const missingDiffs = await getMissingDiffs(Infinity);
 
