@@ -7,6 +7,7 @@
     "dev": "next dev",
     "lint": "next lint",
     "start": "next start",
+    "webhook:dev": "npx webhookthing@latest",
     "generate-all-missing-diffs": "tsx src/lib/generateAllMissingDiffs.ts"
   },
   "dependencies": {
