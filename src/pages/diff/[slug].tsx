@@ -201,15 +201,30 @@ const DiffPage: NextPage<{
               </DialogTitle>
             </DialogHeader>
 
-            <div>
+            <div className="flex flex-col gap-5">
               <p>
                 To apply the patch, you can use the following command:
                 <p>
-                  <code>git apply ./t3-upgrade.patch</code>
+                  <code>git apply --reject ./t3-upgrade.patch</code>
                 </p>
               </p>
 
-              <p className="mt-3">
+              <p>
+                This will create a new file with the changes that could not be
+                applied. You can then use wiggle to apply the changes manually:
+                <p>
+                  <code>wiggle -r ./package.json ./package.json.rej</code>
+                </p>
+              </p>
+
+              <p>
+                This will apply the changes to the file, create a file called
+                package.json.porig with the original file. In case of conflicts,
+                it will add the conflict markers to the file. You can then
+                resolve the conflicts manually.
+              </p>
+
+              <p>
                 Remeber to place your patch file in the project directory, or
                 use the correct file path.
               </p>
