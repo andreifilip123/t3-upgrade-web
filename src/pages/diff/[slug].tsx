@@ -17,7 +17,7 @@ import type { File as FileData } from "gitdiff-parser";
 import { CheckIcon, XIcon } from "lucide-react";
 import { type GetServerSideProps, type NextPage } from "next";
 import { useRouter } from "next/router";
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import {
   Decoration,
   Diff,
@@ -154,15 +154,14 @@ const DiffPage: NextPage<{
           >
             {(hunks) =>
               hunks.map((hunk, i) => (
-                <>
+                <Fragment key={`hunk-${hunk.content}-${i}`}>
                   <Decoration
-                    key={`decoration-${hunk.content}-${i}`}
                     className="bg-gray-100 text-gray-400"
                   >
                     <span className="pl-20">{hunk.content}</span>
                   </Decoration>
-                  <Hunk key={`hunk-${hunk.content}`} hunk={hunk} />
-                </>
+                  <Hunk hunk={hunk} />
+                </Fragment>
               ))
             }
           </Diff>
