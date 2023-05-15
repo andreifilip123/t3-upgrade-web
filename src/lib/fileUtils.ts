@@ -1,5 +1,4 @@
 import { Octokit } from "@octokit/rest";
-import path from "path";
 
 import { env } from "@/env.mjs";
 import { getFeaturesString, type Features } from "./utils";
@@ -9,21 +8,6 @@ export interface DiffLocation {
   upgradeVersion: string;
   features: Features;
 }
-
-export const getDiffPath = ({
-  currentVersion,
-  upgradeVersion,
-  features,
-}: DiffLocation) => {
-  const featuresString = getFeaturesString(features);
-  return path.join(
-    process.cwd(),
-    "diffs",
-    `diff-${currentVersion}-${upgradeVersion}${
-      featuresString ? `-${featuresString}` : ""
-    }.patch`
-  );
-};
 
 const octokit = new Octokit({
   auth: env.GITHUB_PERSONAL_ACCESS_TOKEN,
