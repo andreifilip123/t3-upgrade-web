@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/Button";
 import {
   Dialog,
@@ -6,87 +8,20 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/Dialog";
-import { getDiffPath, type DiffLocation } from "@/lib/fileUtils";
-import {
-  extractVersionsAndFeatures,
-  getFeatureUrl,
-  tokenize,
-} from "@/lib/utils";
-import { promises as fs } from "fs";
-import type { File as FileData } from "gitdiff-parser";
+import { type DiffLocation } from "@/lib/fileUtils";
+import { getFeatureUrl } from "@/lib/utils";
 import { CheckIcon, XIcon } from "lucide-react";
-import { type GetServerSideProps, type NextPage } from "next";
-import { useRouter } from "next/router";
-import { Fragment, useMemo, useState } from "react";
-import {
-  Decoration,
-  Diff,
-  Hunk,
-  parseDiff,
-  type ViewType,
-} from "react-diff-view";
+import { useState } from "react";
+import { parseDiff, type ViewType } from "react-diff-view";
+import FileComponent from "./file-component";
 
-type Props = {
-  diffText: string;
-};
-
-type Params = {
-  slug: string;
-};
-
-export const getServerSideProps: GetServerSideProps<Props, Params> = async (
-  context
-) => {
-  const { params } = context;
-
-  if (!params?.slug) {
-    console.warn("No slug provided");
-    return {
-      notFound: true,
-      reason: "No slug provided",
-    };
-  }
-
-  const versionsAndFeatures = extractVersionsAndFeatures(params.slug);
-
-  if (!versionsAndFeatures) {
-    console.warn("No versions and features provided");
-    return {
-      notFound: true,
-      reason: "No versions and features provided",
-    };
-  }
-
-  const diffPath = getDiffPath(versionsAndFeatures);
-  const fileExists = await fs
-    .access(diffPath, fs.constants.F_OK)
-    .then(() => true)
-    .catch(() => false);
-
-  if (fileExists) {
-    const differences = await fs.readFile(diffPath, "utf8");
-
-    return {
-      props: {
-        diffText: differences,
-        versionsAndFeatures,
-      },
-    };
-  }
-
-  return {
-    notFound: true,
-    props: {
-      reason: "No diff found",
-    },
-  };
-};
-
-const DiffPage: NextPage<{
+const DiffPage = ({
+  diffText,
+  versionsAndFeatures,
+}: {
   diffText: string;
   versionsAndFeatures: DiffLocation;
-}> = ({ diffText, versionsAndFeatures }) => {
-  const router = useRouter();
+}) => {
   const [viewType, setViewType] = useState<ViewType>("split");
 
   const files = parseDiff(diffText ?? "");
@@ -94,81 +29,6 @@ const DiffPage: NextPage<{
   const [expandedDiffs, setExpandedDiffs] = useState<boolean[]>(
     Array.from({ length: files.length }, () => true)
   );
-
-  if (router.isFallback) {
-    return <div>Loading...</div>;
-  }
-
-  const FileComponent = ({
-    file,
-    isExpanded,
-    setIsExpanded,
-  }: {
-    file: FileData;
-    isExpanded: boolean;
-    setIsExpanded: (a: boolean) => void;
-  }) => {
-    const { oldRevision, newRevision, type, hunks, oldPath, newPath } = file;
-
-    const tokens = useMemo(() => tokenize(hunks), [hunks]);
-
-    return (
-      <div key={`${oldRevision}-${newRevision}`}>
-        <button
-          className={`flex w-full flex-row justify-between p-4 font-mono ${
-            isExpanded ? "border-b-2" : ""
-          }`}
-          onClick={() => setIsExpanded(!isExpanded)}
-        >
-          <div className="flex flex-row gap-4">
-            <div className="my-auto rounded-[4px] border border-gray-500 px-1 text-gray-500">
-              {type === "modify"
-                ? "CHANGED"
-                : type === "add"
-                ? "ADDED"
-                : type === "delete"
-                ? "DELETED"
-                : "UNKNOWN"}
-            </div>
-            <h1>
-              {oldPath === "/dev/null"
-                ? newPath
-                : newPath === "/dev/null"
-                ? oldPath
-                : oldPath === newPath
-                ? newPath
-                : oldPath + " → " + newPath}
-            </h1>
-          </div>
-
-          <div className="my-auto rounded-[4px] border border-gray-500 px-1 text-gray-500">
-            {isExpanded ? "Collapse" : "Expand"}
-          </div>
-        </button>
-        {isExpanded && (
-          <Diff
-            viewType={viewType}
-            diffType={type}
-            hunks={hunks}
-            tokens={tokens}
-          >
-            {(hunks) =>
-              hunks.map((hunk, i) => (
-                <Fragment key={`hunk-${hunk.content}-${i}`}>
-                  <Decoration
-                    className="bg-gray-100 text-gray-400"
-                  >
-                    <span className="pl-20">{hunk.content}</span>
-                  </Decoration>
-                  <Hunk hunk={hunk} />
-                </Fragment>
-              ))
-            }
-          </Diff>
-        )}
-      </div>
-    );
-  };
 
   const downloadDiffFile = () => {
     const element = document.createElement("a");
@@ -313,6 +173,7 @@ const DiffPage: NextPage<{
               expandedDiffs[index] = a;
               setExpandedDiffs([...expandedDiffs]);
             }}
+            viewType={viewType}
           />
         </div>
       ))}
