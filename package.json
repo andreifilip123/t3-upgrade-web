@@ -9,15 +9,16 @@
     "start": "next start"
   },
   "dependencies": {
+    "@octokit/rest": "^19.0.8",
     "@radix-ui/react-checkbox": "^1.0.3",
     "@radix-ui/react-dialog": "^1.0.3",
     "@radix-ui/react-select": "^1.2.1",
+    "@t3-oss/env-nextjs": "^0.2.1",
     "class-variance-authority": "^0.5.1",
     "clsx": "^1.2.1",
     "eslint-plugin-tailwindcss": "^3.11.0",
     "gitdiff-parser": "^0.3.1",
     "lucide-react": "^0.134.0",
-    "@t3-oss/env-nextjs": "^0.2.1",
     "next": "^13.4.1",
     "node-fetch": "^2.6.9",
     "react": "18.2.0",
