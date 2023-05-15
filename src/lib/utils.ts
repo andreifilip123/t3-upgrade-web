@@ -138,20 +138,3 @@ export const extractVersionsAndFeatures = (slug: string) => {
     },
   };
 };
-
-export const arrangements = (array: string[]) => {
-  const result: string[][] = [[]];
-
-  for (const element of array) {
-    const length = result.length;
-    for (let i = 0; i < length; i++) {
-      const subset = result[i]?.slice() ?? [];
-      subset.push(element);
-      result.push(subset);
-    }
-  }
-
-  return result
-    .filter((subset) => subset.length > 0)
-    .map((subset) => subset.sort().join("-"));
-};
