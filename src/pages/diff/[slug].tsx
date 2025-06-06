@@ -6,13 +6,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/Dialog";
-import { getDiffPath, type DiffLocation } from "@/lib/fileUtils";
+import { getDiffFromGithub, type DiffLocation } from "@/lib/fileUtils";
 import {
   extractVersionsAndFeatures,
   getFeatureUrl,
   tokenize,
 } from "@/lib/utils";
-import { promises as fs } from "fs";
 import type { File as FileData } from "gitdiff-parser";
 import { CheckIcon, XIcon } from "lucide-react";
 import { type GetServerSideProps, type NextPage } from "next";
@@ -57,29 +56,24 @@ export const getServerSideProps: GetServerSideProps<Props, Params> = async (
     };
   }
 
-  const diffPath = getDiffPath(versionsAndFeatures);
-  const fileExists = await fs
-    .access(diffPath, fs.constants.F_OK)
-    .then(() => true)
-    .catch(() => false);
-
-  if (fileExists) {
-    const differences = await fs.readFile(diffPath, "utf8");
+  try {
+    const diff = await getDiffFromGithub(versionsAndFeatures);
 
     return {
       props: {
-        diffText: differences,
+        diffText: diff,
         versionsAndFeatures,
       },
     };
+  } catch (e) {
+    console.warn("Github API error", e);
+    return {
+      notFound: true,
+      props: {
+        reason: "No diff found",
+      },
+    };
   }
-
-  return {
-    notFound: true,
-    props: {
-      reason: "No diff found",
-    },
-  };
 };
 
 const DiffPage: NextPage<{
@@ -155,9 +149,7 @@ const DiffPage: NextPage<{
             {(hunks) =>
               hunks.map((hunk, i) => (
                 <Fragment key={`hunk-${hunk.content}-${i}`}>
-                  <Decoration
-                    className="bg-gray-100 text-gray-400"
-                  >
+                  <Decoration className="bg-gray-100 text-gray-400">
                     <span className="pl-20">{hunk.content}</span>
                   </Decoration>
                   <Hunk hunk={hunk} />
