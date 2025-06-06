@@ -149,9 +149,7 @@ const DiffPage: NextPage<{
             {(hunks) =>
               hunks.map((hunk, i) => (
                 <Fragment key={`hunk-${hunk.content}-${i}`}>
-                  <Decoration
-                    className="bg-gray-100 text-gray-400"
-                  >
+                  <Decoration className="bg-gray-100 text-gray-400">
                     <span className="pl-20">{hunk.content}</span>
                   </Decoration>
                   <Hunk hunk={hunk} />
